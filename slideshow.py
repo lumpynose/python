@@ -3,6 +3,7 @@ from tkinter import Canvas
 from PIL import ImageTk, Image, ImageOps
 from dirtree import DirTree
 import random
+import sys
 
 # display a full screen slide show.
 # Q key quits, up key adds 5 seconds to the delay,
