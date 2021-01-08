@@ -4,6 +4,11 @@ from PIL import ImageTk, Image, ImageOps
 from dirtree import DirTree
 import random
 
+# display a full screen slide show.
+# Q key quits, up key adds 5 seconds to the delay,
+# down key subtracts 5 seconds from the delay,
+# left key goes back one,
+# right key goes forward one.
 class SlideShow(tk.Frame):
     def __init__(self, files, master):
         super().__init__(master)
@@ -81,7 +86,7 @@ class SlideShow(tk.Frame):
         if (self.counter - 2) < 0:
             self.counter = 0
         else:
-            self.counter = self.counter -2
+            self.counter = self.counter - 2
 
         self.master.after_cancel(self.timer)
         self.update()
