@@ -1,5 +1,6 @@
 import os
 
+# makes a list of all files in a directory
 class DirTree():
     def __init__(self):
         pass
