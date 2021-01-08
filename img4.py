@@ -128,7 +128,7 @@ class Drawit(tk.Frame):
 ###########################################
 
 dirTree = DirTree()
-files = dirTree.files()
+files = dirTree.files("/home/rusty/pics")
 # print(len(files))
 
 root = tk.Tk()
