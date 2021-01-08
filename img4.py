@@ -23,10 +23,10 @@ class Drawit(tk.Frame):
         self.counter = 0
 
         self.master.bind('Q', self.quit)
-        self.master.bind('<Up>', self.up);
-        self.master.bind('<Down>', self.down)
-        self.master.bind('<Left>', self.left)
-        self.master.bind('<Right>', self.right)
+        self.master.bind('<Up>', self.up_key);
+        self.master.bind('<Down>', self.down_key)
+        self.master.bind('<Left>', self.left_key)
+        self.master.bind('<Right>', self.right_key)
 
         self.canvas = Canvas(self, highlightthickness = 0)
 
@@ -59,13 +59,13 @@ class Drawit(tk.Frame):
 
     ###########################################
 
-    def up(self, event):
+    def up_key(self, event):
         # print("up pressed")
         self.seconds = self.seconds + 5;
 
     ###########################################
 
-    def down(self, event):
+    def down_key(self, event):
         # print("down pressed")
 
         if (self.seconds - 5) <= 0:
@@ -75,7 +75,7 @@ class Drawit(tk.Frame):
 
     ###########################################
 
-    def left(self, event):
+    def left_key(self, event):
         # print("left pressed")
 
         if (self.counter - 2) < 0:
@@ -88,7 +88,7 @@ class Drawit(tk.Frame):
 
     ###########################################
 
-    def right(self, event):
+    def right_key(self, event):
         # print("right pressed")
 
         self.master.after_cancel(self.timer)
