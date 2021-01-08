@@ -4,7 +4,7 @@ from PIL import ImageTk, Image, ImageOps
 from dirtree import DirTree
 import random
 
-class Drawit(tk.Frame):
+class SlideShow(tk.Frame):
     def __init__(self, files, master):
         super().__init__(master)
         self.master = master
@@ -98,8 +98,13 @@ class Drawit(tk.Frame):
 
     def main(self):
         print(self.images[self.counter])
-        base_img = Image.open(self.images[self.counter])
 
+        try:
+            base_img = Image.open(self.images[self.counter])
+        except:
+            print("exception in Image.open:", sys.exc_info()[0])
+            return
+        
         (img_width, img_height) = base_img.size
         # print('orig ', img_width, img_height)
 
@@ -119,7 +124,11 @@ class Drawit(tk.Frame):
             y_pad = 0;
             x_pad = (self.screen_width - img_width) / 2
             
-        self.img = ImageTk.PhotoImage(base_img)
+        try:
+            self.img = ImageTk.PhotoImage(base_img)
+        except:
+            print("exception in ImageTk.PhotoImage:", sys.exc_info()[0]);
+            return
 
         self.canvas.configure(width = img_width, height = img_height, highlightthickness = 0)
         self.canvas.create_image(0, 0, image = self.img, anchor = 'nw')
@@ -132,6 +141,6 @@ files = dirTree.files("/home/rusty/pics")
 # print(len(files))
 
 root = tk.Tk()
-app = Drawit(files, master = root)
+app = SlideShow(files, master = root)
 app.mainloop()
 
