@@ -126,13 +126,14 @@ class SlideShow(tk.Frame):
                  
         # reload width and height with new resized values
         (img_width, img_height) = base_img.size
-        print('new ', img_width, img_height)
 
-        if img_width > img_height:
-            x_pad = 0;
+        #if img_width > img_height:
+        if img_height < self.screen_height:
+            # x_pad = 0;
             y_pad = (self.screen_height - img_height) / 2
-        else:
-            y_pad = 0;
+        #else:
+        if img_width < self.screen_width:
+            # y_pad = 0;
             x_pad = (self.screen_width - img_width) / 2
 
         print("pad", x_pad, y_pad)
