@@ -144,6 +144,9 @@ class SlideShow(tk.Frame):
 
 dirTree = DirTree()
 files = dirTree.files("/home/rusty/pics")
+if len(files) = 0:
+    print("nothing to display")
+
 # print(len(files))
 
 root = tk.Tk()
