@@ -20,7 +20,7 @@ class SlideShow(tk.Frame):
         self.screen_width = self.master.winfo_screenwidth()
         self.screen_height = self.master.winfo_screenheight()
 
-        # print(self.screen_width, self.screen_height)
+        print(self.screen_width, self.screen_height)
         
         # - 2 to show any errant borders
         self.basewidth = self.screen_width - 2
@@ -60,19 +60,19 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def quit(self, event):
-         # print("exiting")
+         print("exiting")
          self.master.destroy()
 
     ###########################################
 
     def up_key(self, event):
-        # print("up pressed")
+        print("up pressed")
         self.seconds = self.seconds + 5;
 
     ###########################################
 
     def down_key(self, event):
-        # print("down pressed")
+        print("down pressed")
 
         if (self.seconds - 5) <= 0:
             self.seconds = 1
@@ -82,7 +82,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def left_key(self, event):
-        # print("left pressed")
+        print("left pressed")
 
         if (self.counter - 2) < 0:
             self.counter = 0
@@ -95,7 +95,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def right_key(self, event):
-        # print("right pressed")
+        print("right pressed")
 
         self.master.after_cancel(self.timer)
         self.update()
@@ -112,7 +112,7 @@ class SlideShow(tk.Frame):
             return
         
         (img_width, img_height) = base_img.size
-        # print('orig ', img_width, img_height)
+        print('orig ', img_width, img_height)
 
         ratio = min(self.basewidth / img_width, self.baseheight / img_height)
         wsize = int(img_width * ratio);
@@ -121,7 +121,7 @@ class SlideShow(tk.Frame):
                  
         # reload width and height with new resized values
         (img_width, img_height) = base_img.size
-        # print('new ', img_width, img_height)
+        print('new ', img_width, img_height)
 
         if img_width > img_height:
             x_pad = 0;
@@ -144,10 +144,11 @@ class SlideShow(tk.Frame):
 
 dirTree = DirTree()
 files = dirTree.files("/home/rusty/pics")
-if len(files) = 0:
-    print("nothing to display")
 
-# print(len(files))
+if len(files) = 0:
+    sys.exit("nothing to display")
+
+print(len(files))
 
 root = tk.Tk()
 app = SlideShow(files, master = root)
