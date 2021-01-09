@@ -115,6 +115,8 @@ class SlideShow(tk.Frame):
         print('orig ', img_width, img_height)
 
         ratio = min(self.basewidth / img_width, self.baseheight / img_height)
+        print("ratio", ratio)
+
         wsize = int(img_width * ratio);
         hsize = int(img_height * ratio);
         base_img = base_img.resize((wsize, hsize), Image.ANTIALIAS)
