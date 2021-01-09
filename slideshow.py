@@ -7,6 +7,7 @@ from dirtree import DirTree
 import random
 import sys
 import argparse
+import logging
 
 # display a full screen slide show.
 # Q key quits, up key adds 5 seconds to the delay,
@@ -16,6 +17,9 @@ import argparse
 class SlideShow(tk.Frame):
     def __init__(self, files, sleep, master):
         super().__init__(master)
+
+        logging.basicConfig(filename='/tmp/slideshow.log', level=logging.WARNING)
+
         self.master = master
         self.seconds = sleep
         self.images = files
@@ -26,7 +30,7 @@ class SlideShow(tk.Frame):
         self.screen_width = self.master.winfo_screenwidth()
         self.screen_height = self.master.winfo_screenheight()
 
-        # print(self.screen_width, self.screen_height)
+        logging.info(self.screen_width, self.screen_height)
         
         # - 2 to show any errant borders
         self.basewidth = self.screen_width - 2
@@ -63,19 +67,19 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def quit(self, event):
-         # print("exiting")
+         logging.info("exiting")
          self.master.destroy()
 
     ###########################################
 
     def up_key(self, event):
-        # print("up pressed")
+        logging.info("up pressed")
         self.seconds += 5;
 
     ###########################################
 
     def down_key(self, event):
-        # print("down pressed")
+        logging.info("down pressed")
 
         if (self.seconds - 5) <= 0:
             self.seconds = 1
@@ -85,7 +89,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def left_key(self, event):
-        # print("left pressed")
+        logging.info("left pressed")
 
         if (self.counter - 2) < 0:
             self.counter = 0
@@ -98,7 +102,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def right_key(self, event):
-        # print("right pressed")
+        logging.info("right pressed")
 
         self.master.after_cancel(self.timer)
         self.update()
@@ -106,29 +110,29 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def main(self):
-        # print(self.images[self.counter])
+        logging.info(self.images[self.counter])
 
         try:
             base_img = Image.open(self.images[self.counter])
         except:
-            print("exception in Image.open:", sys.exc_info()[0], self.images[self.counter])
+            logging.error("exception in Image.open:", sys.exc_info()[0], self.images[self.counter])
             return
         
         (img_width, img_height) = base_img.size
-        # print('orig ', img_width, img_height)
+        logging.info('orig ', img_width, img_height)
 
         ratio = min(self.basewidth / img_width, self.baseheight / img_height)
-        # print("ratio", ratio)
+        logging.info("ratio", ratio)
 
         wsize = int(img_width * ratio);
         hsize = int(img_height * ratio);
 
-        # print('new ', wsize, hsize)
+        logging.info('new ', wsize, hsize)
 
         try:
             base_img = base_img.resize((wsize, hsize), Image.ANTIALIAS)
         except:
-            print("exception in image.resize:", sys.exc_info()[0], self.images[self.counter])
+            logging.error("exception in image.resize:", sys.exc_info()[0], self.images[self.counter])
             return
                  
         # reload width and height with new resized values
@@ -143,12 +147,12 @@ class SlideShow(tk.Frame):
             # y_pad = 0;
             x_pad = (self.screen_width - img_width) / 2
 
-        # print("pad", x_pad, y_pad)
+        logging.info("pad", x_pad, y_pad)
 
         try:
             self.img = ImageTk.PhotoImage(base_img)
         except:
-            print("exception in ImageTk.PhotoImage:", sys.exc_info()[0], self.images[self.counter]);
+            logging.error("exception in ImageTk.PhotoImage:", sys.exc_info()[0], self.images[self.counter]);
             return
 
         # delete previous image
