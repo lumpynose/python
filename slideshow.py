@@ -26,7 +26,7 @@ class SlideShow(tk.Frame):
         self.screen_width = self.master.winfo_screenwidth()
         self.screen_height = self.master.winfo_screenheight()
 
-        print(self.screen_width, self.screen_height)
+        # print(self.screen_width, self.screen_height)
         
         # - 2 to show any errant borders
         self.basewidth = self.screen_width - 2
@@ -62,19 +62,19 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def quit(self, event):
-         print("exiting")
+         # print("exiting")
          self.master.destroy()
 
     ###########################################
 
     def up_key(self, event):
-        print("up pressed")
+        # print("up pressed")
         self.seconds = self.seconds + 5;
 
     ###########################################
 
     def down_key(self, event):
-        print("down pressed")
+        # print("down pressed")
 
         if (self.seconds - 5) <= 0:
             self.seconds = 1
@@ -84,7 +84,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def left_key(self, event):
-        print("left pressed")
+        # print("left pressed")
 
         if (self.counter - 2) < 0:
             self.counter = 0
@@ -97,7 +97,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def right_key(self, event):
-        print("right pressed")
+        # print("right pressed")
 
         self.master.after_cancel(self.timer)
         self.update()
@@ -105,7 +105,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def main(self):
-        print(self.images[self.counter])
+        # print(self.images[self.counter])
 
         try:
             base_img = Image.open(self.images[self.counter])
@@ -114,15 +114,15 @@ class SlideShow(tk.Frame):
             return
         
         (img_width, img_height) = base_img.size
-        print('orig ', img_width, img_height)
+        # print('orig ', img_width, img_height)
 
         ratio = min(self.basewidth / img_width, self.baseheight / img_height)
-        print("ratio", ratio)
+        # print("ratio", ratio)
 
         wsize = int(img_width * ratio);
         hsize = int(img_height * ratio);
 
-        print('new ', wsize, hsize)
+        # print('new ', wsize, hsize)
 
         try:
             base_img = base_img.resize((wsize, hsize), Image.ANTIALIAS)
@@ -142,7 +142,7 @@ class SlideShow(tk.Frame):
             # y_pad = 0;
             x_pad = (self.screen_width - img_width) / 2
 
-        print("pad", x_pad, y_pad)
+        # print("pad", x_pad, y_pad)
 
         try:
             self.img = ImageTk.PhotoImage(base_img)
@@ -157,10 +157,12 @@ class SlideShow(tk.Frame):
 ###########################################
 
 parser = argparse.ArgumentParser(description='Display some images.')
+
 parser.add_argument('directory',
                     nargs = '?',
                     help = 'The directory of images',
                     default="/home/rusty/pics")
+
 parser.add_argument('--sleep',
                     nargs = '?',
                     help = 'How long to pause between images',
@@ -179,6 +181,6 @@ if len(files) == 0:
     sys.exit("nothing to display")
 
 root = tk.Tk()
-app = SlideShow(files, master = root)
+app = SlideShow(files = files, sleep = sleep, master = root)
 app.mainloop()
 
