@@ -110,7 +110,7 @@ class SlideShow(tk.Frame):
         try:
             base_img = Image.open(self.images[self.counter])
         except:
-            print("exception in Image.open:", sys.exc_info()[0])
+            print("exception in Image.open:", sys.exc_info()[0], self.images[self.counter])
             return
         
         (img_width, img_height) = base_img.size
@@ -127,7 +127,7 @@ class SlideShow(tk.Frame):
         try:
             base_img = base_img.resize((wsize, hsize), Image.ANTIALIAS)
         except:
-            print("exception in image.resize:", sys.exc_info()[0])
+            print("exception in image.resize:", sys.exc_info()[0]], self.images[self.counter])
             return
                  
         # reload width and height with new resized values
@@ -147,7 +147,7 @@ class SlideShow(tk.Frame):
         try:
             self.img = ImageTk.PhotoImage(base_img)
         except:
-            print("exception in ImageTk.PhotoImage:", sys.exc_info()[0]);
+            print("exception in ImageTk.PhotoImage:", sys.exc_info()[0]], self.images[self.counter]);
             return
 
         self.canvas.configure(width = img_width, height = img_height, highlightthickness = 0)
