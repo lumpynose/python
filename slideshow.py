@@ -117,12 +117,10 @@ class SlideShow(tk.Frame):
         ratio = min(self.basewidth / img_width, self.baseheight / img_height)
         print("ratio", ratio)
 
-        if ratio > 1:
-            wsize = int(img_width * ratio);
-            hsize = int(img_height * ratio);
-        else
-            wsize = int(img_width / ratio);
-            hsize = int(img_height / ratio);
+        wsize = int(img_width * ratio);
+        hsize = int(img_height * ratio);
+
+        print('new ', wsize, hsize)
 
         base_img = base_img.resize((wsize, hsize), Image.ANTIALIAS)
                  
@@ -136,7 +134,9 @@ class SlideShow(tk.Frame):
         else:
             y_pad = 0;
             x_pad = (self.screen_width - img_width) / 2
-            
+
+        print("pad", x_pad, y_pad)
+
         try:
             self.img = ImageTk.PhotoImage(base_img)
         except:
