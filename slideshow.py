@@ -1,9 +1,12 @@
+#! /home/rusty/env/bin/python
+
 import tkinter as tk
 from tkinter import Canvas
 from PIL import ImageTk, Image, ImageOps
 from dirtree import DirTree
 import random
 import sys
+import argparse
 
 # display a full screen slide show.
 # Q key quits, up key adds 5 seconds to the delay,
@@ -11,9 +14,12 @@ import sys
 # left key goes back one,
 # right key goes forward one.
 class SlideShow(tk.Frame):
-    def __init__(self, files, master):
+    def __init__(self, files, sleep, master):
         super().__init__(master)
         self.master = master
+        self.seconds = sleep
+        self.images = files
+
         self.pack()
         self.configure(bg = 'black')
 
@@ -36,12 +42,8 @@ class SlideShow(tk.Frame):
 
         self.canvas = Canvas(self, highlightthickness = 0)
 
-        self.images = files
-
         random.shuffle(self.images)
 
-        self.seconds = 5
-        
         self.update()
 
     ###########################################
@@ -122,7 +124,11 @@ class SlideShow(tk.Frame):
 
         print('new ', wsize, hsize)
 
-        base_img = base_img.resize((wsize, hsize), Image.ANTIALIAS)
+        try:
+            base_img = base_img.resize((wsize, hsize), Image.ANTIALIAS)
+        except:
+            print("exception in image.resize:", sys.exc_info()[0])
+            return
                  
         # reload width and height with new resized values
         (img_width, img_height) = base_img.size
@@ -150,13 +156,27 @@ class SlideShow(tk.Frame):
 
 ###########################################
 
+parser = argparse.ArgumentParser(description='Display some images.')
+parser.add_argument('directory',
+                    nargs = '?',
+                    help = 'The directory of images',
+                    default="/home/rusty/pics")
+parser.add_argument('--sleep',
+                    nargs = '?',
+                    help = 'How long to pause between images',
+                    type = int,
+                    default = 15)
+
+args = parser.parse_args()
+
+dir = args.directory
+sleep = args.sleep
+
 dirTree = DirTree()
-files = dirTree.files("/home/rusty/pics")
+files = dirTree.files(dir)
 
 if len(files) == 0:
     sys.exit("nothing to display")
-
-print(len(files))
 
 root = tk.Tk()
 app = SlideShow(files, master = root)
