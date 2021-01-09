@@ -33,6 +33,7 @@ class SlideShow(tk.Frame):
         self.baseheight = self.screen_height - 2
 
         self.counter = 0
+        self.img_id = None
 
         self.master.bind('Q', self.quit)
         self.master.bind('<Up>', self.up_key);
@@ -51,7 +52,7 @@ class SlideShow(tk.Frame):
     def update(self):
         self.main()
 
-        self.counter = self.counter + 1
+        self.counter += 1
 
         if self.counter >= len(self.images):
             random.shuffle(self.images)
@@ -69,7 +70,7 @@ class SlideShow(tk.Frame):
 
     def up_key(self, event):
         # print("up pressed")
-        self.seconds = self.seconds + 5;
+        self.seconds += 5;
 
     ###########################################
 
@@ -79,7 +80,7 @@ class SlideShow(tk.Frame):
         if (self.seconds - 5) <= 0:
             self.seconds = 1
         else:
-            self.seconds = self.seconds - 5
+            self.seconds -= 5
 
     ###########################################
 
@@ -89,7 +90,7 @@ class SlideShow(tk.Frame):
         if (self.counter - 2) < 0:
             self.counter = 0
         else:
-            self.counter = self.counter - 2
+            self.counter -= 2
 
         self.master.after_cancel(self.timer)
         self.update()
@@ -150,8 +151,11 @@ class SlideShow(tk.Frame):
             print("exception in ImageTk.PhotoImage:", sys.exc_info()[0], self.images[self.counter]);
             return
 
+        # delete previous image
+        self.canvas.delete(self.img_id)
+
         self.canvas.configure(width = img_width, height = img_height, highlightthickness = 0)
-        self.canvas.create_image(0, 0, image = self.img, anchor = 'nw')
+        self.img_id = self.canvas.create_image(0, 0, image = self.img, anchor = 'nw')
         self.canvas.pack(padx = x_pad, pady = y_pad)
 
 ###########################################
@@ -174,8 +178,7 @@ args = parser.parse_args()
 dir = args.directory
 sleep = args.sleep
 
-dirTree = DirTree()
-files = dirTree.files(dir)
+files = DirTree().files(dir)
 
 if len(files) == 0:
     sys.exit("nothing to display")
