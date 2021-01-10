@@ -18,11 +18,9 @@ class SlideShow(tk.Frame):
     def __init__(self, files, sleep, master):
         super().__init__(master)
 
-        logging.basicConfig(filename='/tmp/slideshow.log', level=logging.WARNING)
-
-        self.master = master
-        self.seconds = sleep
         self.images = files
+        self.seconds = sleep
+        self.master = master
 
         self.pack()
         self.configure(bg = 'black')
@@ -30,7 +28,8 @@ class SlideShow(tk.Frame):
         self.screen_width = self.master.winfo_screenwidth()
         self.screen_height = self.master.winfo_screenheight()
 
-        logging.info(self.screen_width, self.screen_height)
+        logging.info("{}, {}".format(self.screen_width, self.screen_height)
+        )
         
         # - 2 to show any errant borders
         self.basewidth = self.screen_width - 2
@@ -110,29 +109,29 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def main(self):
-        logging.info(self.images[self.counter])
+        logging.info("file: {}".format(self.images[self.counter]))
 
         try:
             base_img = Image.open(self.images[self.counter])
         except:
-            logging.error("exception in Image.open:", sys.exc_info()[0], self.images[self.counter])
+            logging.warning("exception in Image.open: {}, {}".format(sys.exc_info()[0], self.images[self.counter]))
             return
         
         (img_width, img_height) = base_img.size
-        logging.info('orig ', img_width, img_height)
+        logging.info("orig {}/{}".format(img_width, img_height))
 
         ratio = min(self.basewidth / img_width, self.baseheight / img_height)
-        logging.info("ratio", ratio)
+        logging.info("ratio: {}".format(ratio))
 
         wsize = int(img_width * ratio);
         hsize = int(img_height * ratio);
 
-        logging.info('new ', wsize, hsize)
+        logging.info("new size: {}/{}".format(wsize, hsize))
 
         try:
             base_img = base_img.resize((wsize, hsize), Image.ANTIALIAS)
         except:
-            logging.error("exception in image.resize:", sys.exc_info()[0], self.images[self.counter])
+            logging.warning("exception in image.resize: {}, {}".format(sys.exc_info()[0], self.images[self.counter]))
             return
                  
         # reload width and height with new resized values
@@ -147,12 +146,12 @@ class SlideShow(tk.Frame):
             # y_pad = 0;
             x_pad = (self.screen_width - img_width) / 2
 
-        logging.info("pad", x_pad, y_pad)
+        logging.info("pading: {}/{}".format(x_pad, y_pad))
 
         try:
             self.img = ImageTk.PhotoImage(base_img)
         except:
-            logging.error("exception in ImageTk.PhotoImage:", sys.exc_info()[0], self.images[self.counter]);
+            logging.warning("exception in ImageTk.PhotoImage: {}, {}".format(sys.exc_info()[0], self.images[self.counter]))
             return
 
         # delete previous image
@@ -163,6 +162,7 @@ class SlideShow(tk.Frame):
         self.canvas.pack(padx = x_pad, pady = y_pad)
 
 ###########################################
+logging.basicConfig(filename='/tmp/slideshow.log', level=logging.WARNING)
 
 parser = argparse.ArgumentParser(description='Display some images.')
 
