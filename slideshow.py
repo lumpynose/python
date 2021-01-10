@@ -190,4 +190,3 @@ if len(files) == 0:
 root = tk.Tk()
 app = SlideShow(files = files, sleep = sleep, master = root)
 app.mainloop()
-
