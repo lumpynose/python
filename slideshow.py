@@ -262,14 +262,14 @@ class SlideShow(tk.Frame):
         return
 
 ###########################################
-logging.basicConfig(filename='/tmp/slideshow.log', level=logging.WARNING)
+logging.basicConfig(filename = '/tmp/slideshow.log', level=logging.WARNING)
 
-parser = argparse.ArgumentParser(description='Display some images.')
+parser = argparse.ArgumentParser(description = 'Display some images.')
 
 parser.add_argument('directory',
                     nargs = '?',
                     help = 'The directory of images',
-                    default="/home/rusty/pics")
+                    default = "/home/rusty/pics")
 
 parser.add_argument('--sleep',
                     nargs = '?',
