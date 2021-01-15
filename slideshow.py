@@ -30,9 +30,8 @@ class SlideShow(tk.Frame):
         self.screen_width = self.master.winfo_screenwidth()
         self.screen_height = self.master.winfo_screenheight()
 
-        print(self.screen_width, self.screen_height);
         logging.info("{}, {}".format(self.screen_width, self.screen_height))
-        
+
         # - 2 to show any errant borders
         self.basewidth = self.screen_width - 2
         self.baseheight = self.screen_height - 2
@@ -163,11 +162,11 @@ class SlideShow(tk.Frame):
             self.master.after_cancel(self.timer)
 
         self.loc = 0;
-        
+
         self.display_frame()
 
         return
-    
+
     ###########################################
 
     def display_frame(self):
@@ -180,7 +179,7 @@ class SlideShow(tk.Frame):
         else:
             self.counter += 1
             self.update()
-                
+
         return
 
     ###########################################
@@ -207,12 +206,12 @@ class SlideShow(tk.Frame):
             # return(image)
 
         return(new_img)
-    
+
     ###########################################
 
     def display(self, image):
         new_img = self.resize_image(image)
-        
+
         # reload width and height with new resized values
         (img_width, img_height) = new_img.size
 
@@ -238,12 +237,12 @@ class SlideShow(tk.Frame):
         self.canvas.pack(padx = x_pad, pady = y_pad)
 
         return
-    
+
     ###########################################
 
     def main(self):
         image_name = self.images[self.counter]
-        
+
         logging.info("file: {}".format(image_name))
 
         try:
@@ -251,16 +250,16 @@ class SlideShow(tk.Frame):
         except:
             logging.warning("exception in Image.open: {}, {}".format(sys.exc_info()[0], image_name))
             return
- 
+
         #print("main type: ", type(base_img))
         #print("main type: ", type(base_img.copy()))
-        
+
         if self.is_gif(image_name):
             self.display_gif(base_img)
             return
 
         self.display(base_img)
-        
+
         return
 
 ###########################################
