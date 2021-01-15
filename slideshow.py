@@ -2,7 +2,8 @@
 
 import tkinter as tk
 from tkinter import Canvas
-from PIL import ImageTk, Image, ImageOps
+from PIL import ImageTk
+import PIL as pil
 from dirtree import DirTree
 import random
 import sys
@@ -21,6 +22,7 @@ class SlideShow(tk.Frame):
         self.images = files
         self.seconds = sleep
         self.master = master
+        self.timer = None;
 
         self.pack()
         self.configure(bg = 'black')
@@ -50,6 +52,8 @@ class SlideShow(tk.Frame):
 
         self.update()
 
+        return
+
     ###########################################
 
     def update(self):
@@ -63,17 +67,23 @@ class SlideShow(tk.Frame):
 
         self.timer = self.master.after(self.seconds * 1000, self.update)
 
+        return
+
     ###########################################
 
     def quit(self, event):
          logging.info("exiting")
          self.master.destroy()
 
+         return
+
     ###########################################
 
     def up_key(self, event):
         logging.info("up pressed")
         self.seconds += 5;
+
+        return
 
     ###########################################
 
@@ -84,6 +94,8 @@ class SlideShow(tk.Frame):
             self.seconds = 1
         else:
             self.seconds -= 5
+
+        return
 
     ###########################################
 
@@ -98,6 +110,8 @@ class SlideShow(tk.Frame):
         self.master.after_cancel(self.timer)
         self.update()
 
+        return
+
     ###########################################
 
     def right_key(self, event):
@@ -106,18 +120,75 @@ class SlideShow(tk.Frame):
         self.master.after_cancel(self.timer)
         self.update()
 
+        return
+
     ###########################################
 
-    def main(self):
-        logging.info("file: {}".format(self.images[self.counter]))
+    def is_gif(self, image_name):
+        if (image_name.endswith(".gif")):
+            logging.info("is gif: {}".format(image_name))
+            print("is gif: ", image_name)
+            return(True)
+
+        return(False)
+
+    ###########################################
+
+    def display_gif(self, image):
+        self.frames = []
 
         try:
-            base_img = Image.open(self.images[self.counter])
+            self.delay = image.info['duration']
+            print("duration: ", self.delay)
         except:
-            logging.warning("exception in Image.open: {}, {}".format(sys.exc_info()[0], self.images[self.counter]))
+            self.delay = 100
+
+        try:
+            i = 0
+            while True:
+                image.seek(i)
+                self.frames.append(ImageTk.PhotoImage(image.copy()))
+                self.frames[i].size= image.size
+                print("i: ", i)
+                i += 1
+        except EOFError:
+            print("EOFError")
+            pass
+
+        if len(self.frames) == 1:
+            print("only 1 frame")
+            display(image)
             return
+
+        if (self.timer != None):
+            self.master.after_cancel(self.timer)
+
+        self.loc = 0;
         
-        (img_width, img_height) = base_img.size
+        self.display_frame()
+
+        return
+    
+    ###########################################
+
+    def display_frame(self):
+        if self.frames:
+            self.display(self.frames[self.loc])
+
+            self.loc += 1
+            self.loc %= len(self.frames)
+
+            if self.loc > 0:
+                self.after(self.delay, self.display_frame)
+            else:
+                self.update()
+                
+        return
+
+    ###########################################
+
+    def resize_image(self, image):
+        (img_width, img_height) = image.size
         logging.info("orig {}/{}".format(img_width, img_height))
 
         ratio = min(self.basewidth / img_width, self.baseheight / img_height)
@@ -129,37 +200,66 @@ class SlideShow(tk.Frame):
         logging.info("new size: {}/{}".format(wsize, hsize))
 
         try:
-            base_img = base_img.resize((wsize, hsize), Image.ANTIALIAS)
+            new_img = image.resize((wsize, hsize), pil.Image.ANTIALIAS)
         except:
-            logging.warning("exception in image.resize: {}, {}".format(sys.exc_info()[0], self.images[self.counter]))
-            return
-                 
-        # reload width and height with new resized values
-        (img_width, img_height) = base_img.size
+            logging.warning("exception in image.resize: {}".format(sys.exc_info()[0]))
+            # return(image)
 
-        #if img_width > img_height:
+        return(new_img)
+    
+    ###########################################
+
+    def display(self, image):
+        new_img = self.resize_image(image)
+        
+        # reload width and height with new resized values
+        (img_width, img_height) = new_img.size
+
         if img_height < self.screen_height:
-            # x_pad = 0;
             y_pad = (self.screen_height - img_height) / 2
-        #else:
+
         if img_width < self.screen_width:
-            # y_pad = 0;
             x_pad = (self.screen_width - img_width) / 2
 
         logging.info("pading: {}/{}".format(x_pad, y_pad))
 
         try:
-            self.img = ImageTk.PhotoImage(base_img)
+            self.tk_img = ImageTk.PhotoImage(new_img)
         except:
-            logging.warning("exception in ImageTk.PhotoImage: {}, {}".format(sys.exc_info()[0], self.images[self.counter]))
-            return
+            logging.warning("exception in ImageTk.PhotoImage: {}".format(sys.exc_info()[0]))
+            # return
 
         # delete previous image
         self.canvas.delete(self.img_id)
 
         self.canvas.configure(width = img_width, height = img_height, highlightthickness = 0)
-        self.img_id = self.canvas.create_image(0, 0, image = self.img, anchor = 'nw')
+        self.img_id = self.canvas.create_image(0, 0, image = self.tk_img, anchor = 'nw')
         self.canvas.pack(padx = x_pad, pady = y_pad)
+
+        return
+    
+    ###########################################
+
+    def main(self):
+        image_name = self.images[self.counter]
+        
+        logging.info("file: {}".format(image_name))
+
+        try:
+            base_img = ImageTk.Image.open(image_name)
+        except:
+            logging.warning("exception in Image.open: {}, {}".format(sys.exc_info()[0], image_name))
+            return
+        
+        print("size: ", base_img.size)
+
+        # if self.is_gif(image_name):
+        #    self.display_gif(base_img)
+        #    # return
+
+        self.display(base_img)
+        
+        return
 
 ###########################################
 logging.basicConfig(filename='/tmp/slideshow.log', level=logging.WARNING)
