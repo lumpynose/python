@@ -2,7 +2,7 @@
 
 import tkinter as tk
 from tkinter import Canvas
-from PIL import ImageTk
+from PIL import ImageTk, ImageOps
 import PIL as pil
 from dirtree import DirTree
 import random
@@ -30,8 +30,8 @@ class SlideShow(tk.Frame):
         self.screen_width = self.master.winfo_screenwidth()
         self.screen_height = self.master.winfo_screenheight()
 
-        logging.info("{}, {}".format(self.screen_width, self.screen_height)
-        )
+        print(self.screen_width, self.screen_height);
+        logging.info("{}, {}".format(self.screen_width, self.screen_height))
         
         # - 2 to show any errant borders
         self.basewidth = self.screen_width - 2
@@ -51,21 +51,6 @@ class SlideShow(tk.Frame):
         random.shuffle(self.images)
 
         self.update()
-
-        return
-
-    ###########################################
-
-    def update(self):
-        self.main()
-
-        self.counter += 1
-
-        if self.counter >= len(self.images):
-            random.shuffle(self.images)
-            self.counter = 0
-
-        self.timer = self.master.after(self.seconds * 1000, self.update)
 
         return
 
@@ -124,10 +109,23 @@ class SlideShow(tk.Frame):
 
     ###########################################
 
+    def update(self):
+        self.main()
+
+        self.counter += 1
+
+        if self.counter >= len(self.images):
+            random.shuffle(self.images)
+            self.counter = 0
+
+        self.timer = self.master.after(self.seconds * 1000, self.update)
+
+        return
+
+    ###########################################
+
     def is_gif(self, image_name):
         if (image_name.endswith(".gif")):
-            logging.info("is gif: {}".format(image_name))
-            print("is gif: ", image_name)
             return(True)
 
         return(False)
@@ -139,7 +137,6 @@ class SlideShow(tk.Frame):
 
         try:
             self.delay = image.info['duration']
-            print("duration: ", self.delay)
         except:
             self.delay = 100
 
@@ -147,13 +144,15 @@ class SlideShow(tk.Frame):
             i = 0
             while True:
                 image.seek(i)
-                self.frames.append(ImageTk.PhotoImage(image.copy()))
-                self.frames[i].size= image.size
-                print("i: ", i)
+                # self.frames.append(ImageTk.PhotoImage(image.copy()))
+                self.frames.append(image.copy())
+                # print("image: ", type(self.frames[i]))
+                # self.frames[i].size = self.frames[i].width(), self.frames[i].height()
                 i += 1
         except EOFError:
-            print("EOFError")
             pass
+
+        print("duration, frames ", self.delay, len(self.frames))
 
         if len(self.frames) == 1:
             print("only 1 frame")
@@ -172,16 +171,15 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def display_frame(self):
-        if self.frames:
-            self.display(self.frames[self.loc])
+        self.display(self.frames[self.loc])
 
-            self.loc += 1
-            self.loc %= len(self.frames)
+        self.loc += 1
 
-            if self.loc > 0:
-                self.after(self.delay, self.display_frame)
-            else:
-                self.update()
+        if self.loc < len(self.frames):
+            self.master.after(self.delay, self.display_frame)
+        else:
+            self.counter += 1
+            self.update()
                 
         return
 
@@ -199,10 +197,13 @@ class SlideShow(tk.Frame):
 
         logging.info("new size: {}/{}".format(wsize, hsize))
 
+        # print("ratio: ", ratio)
+        # print("resize_image type: ", type(image))
         try:
-            new_img = image.resize((wsize, hsize), pil.Image.ANTIALIAS)
+            new_img = ImageOps.scale(image, ratio)
+            # new_img = image.resize((wsize, hsize), pil.Image.ANTIALIAS)
         except:
-            logging.warning("exception in image.resize: {}".format(sys.exc_info()[0]))
+            logging.warning("exception in ImageOps.scale: {}".format(sys.exc_info()[0]))
             # return(image)
 
         return(new_img)
@@ -250,19 +251,21 @@ class SlideShow(tk.Frame):
         except:
             logging.warning("exception in Image.open: {}, {}".format(sys.exc_info()[0], image_name))
             return
+ 
+        #print("main type: ", type(base_img))
+        #print("main type: ", type(base_img.copy()))
         
-        print("size: ", base_img.size)
-
-        # if self.is_gif(image_name):
-        #    self.display_gif(base_img)
-        #    # return
+        if self.is_gif(image_name):
+            self.display_gif(base_img)
+            return
 
         self.display(base_img)
         
         return
 
 ###########################################
-logging.basicConfig(filename = '/tmp/slideshow.log', level=logging.WARNING)
+#logging.basicConfig(filename = '/tmp/slideshow.log', level=logging.WARNING)
+logging.basicConfig(level=logging.WARNING)
 
 parser = argparse.ArgumentParser(description = 'Display some images.')
 
