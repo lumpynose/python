@@ -37,7 +37,12 @@ class SlideShow(tk.Frame):
         self.baseheight = self.screen_height - 2
 
         self.counter = 0
+        self.repeat = 0
+
+        self.repeating = False
+
         self.img_id = None
+        self.tk_img = None
 
         self.master.bind('Q', self.quit)
         self.master.bind('<Up>', self.up_key);
@@ -91,7 +96,7 @@ class SlideShow(tk.Frame):
         else:
             self.counter -= 2
 
-        self.master.after_cancel(self.timer)
+        self.after_cancel(self.timer)
         self.update()
 
         return
@@ -101,7 +106,7 @@ class SlideShow(tk.Frame):
     def right_key(self, event):
         logging.info("right pressed")
 
-        self.master.after_cancel(self.timer)
+        self.after_cancel(self.timer)
         self.update()
 
         return
@@ -109,6 +114,8 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def update(self):
+        self.timer = self.after(self.seconds * 1000, lambda: self.update())
+
         self.main()
 
         self.counter += 1
@@ -116,9 +123,7 @@ class SlideShow(tk.Frame):
         if self.counter >= len(self.images):
             random.shuffle(self.images)
             self.counter = 0
-
-        self.timer = self.master.after(self.seconds * 1000, self.update)
-
+ 
         return
 
     ###########################################
@@ -132,6 +137,9 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def display_gif(self, image):
+        if self.timer != None:
+            self.after_cancel(self.timer)
+
         self.frames = []
 
         try:
@@ -143,25 +151,20 @@ class SlideShow(tk.Frame):
             i = 0
             while True:
                 image.seek(i)
-                # self.frames.append(ImageTk.PhotoImage(image.copy()))
                 self.frames.append(image.copy())
-                # print("image: ", type(self.frames[i]))
-                # self.frames[i].size = self.frames[i].width(), self.frames[i].height()
                 i += 1
         except EOFError:
             pass
 
-        print("duration, frames ", self.delay, len(self.frames))
-
         if len(self.frames) == 1:
-            print("only 1 frame")
-            display(image)
+            self.display(image)
+
             return
 
-        if (self.timer != None):
-            self.master.after_cancel(self.timer)
-
         self.loc = 0;
+
+        if (self.delay * len(self.frames)) < (self.seconds * 500):
+            self.repeat = int((self.seconds * 500) / (self.delay * len(self.frames)))
 
         self.display_frame()
 
@@ -175,10 +178,19 @@ class SlideShow(tk.Frame):
         self.loc += 1
 
         if self.loc < len(self.frames):
-            self.master.after(self.delay, self.display_frame)
-        else:
-            self.counter += 1
-            self.update()
+            self.timer = self.after(self.delay, lambda: self.display_frame())
+
+            return
+
+        if self.repeat > 0:
+            self.repeat -= 1
+            self.loc = 0
+                    
+            self.timer = self.after(self.delay, lambda: self.display_frame())
+
+            return
+
+        self.update()
 
         return
 
@@ -196,14 +208,10 @@ class SlideShow(tk.Frame):
 
         logging.info("new size: {}/{}".format(wsize, hsize))
 
-        # print("ratio: ", ratio)
-        # print("resize_image type: ", type(image))
         try:
             new_img = ImageOps.scale(image, ratio)
-            # new_img = image.resize((wsize, hsize), pil.Image.ANTIALIAS)
         except:
             logging.warning("exception in ImageOps.scale: {}".format(sys.exc_info()[0]))
-            # return(image)
 
         return(new_img)
 
@@ -211,7 +219,7 @@ class SlideShow(tk.Frame):
 
     def display(self, image):
         new_img = self.resize_image(image)
-
+        
         # reload width and height with new resized values
         (img_width, img_height) = new_img.size
 
@@ -222,12 +230,11 @@ class SlideShow(tk.Frame):
             x_pad = (self.screen_width - img_width) / 2
 
         logging.info("pading: {}/{}".format(x_pad, y_pad))
-
+        
         try:
             self.tk_img = ImageTk.PhotoImage(new_img)
         except:
             logging.warning("exception in ImageTk.PhotoImage: {}".format(sys.exc_info()[0]))
-            # return
 
         # delete previous image
         self.canvas.delete(self.img_id)
@@ -249,13 +256,12 @@ class SlideShow(tk.Frame):
             base_img = ImageTk.Image.open(image_name)
         except:
             logging.warning("exception in Image.open: {}, {}".format(sys.exc_info()[0], image_name))
-            return
 
-        #print("main type: ", type(base_img))
-        #print("main type: ", type(base_img.copy()))
+            return
 
         if self.is_gif(image_name):
             self.display_gif(base_img)
+
             return
 
         self.display(base_img)
@@ -263,6 +269,18 @@ class SlideShow(tk.Frame):
         return
 
 ###########################################
+
+def tracefunc(frame, event, arg, indent=[0]):
+    if event == "call":
+        indent[0] += 2
+        print("-" * indent[0] + "> call function", frame.f_code.co_name)
+    elif event == "return":
+        print("<" + "-" * indent[0], "exit function", frame.f_code.co_name)
+        indent[0] -= 2
+        return tracefunc
+
+###########################################
+
 #logging.basicConfig(filename = '/tmp/slideshow.log', level=logging.WARNING)
 logging.basicConfig(level=logging.WARNING)
 
@@ -291,4 +309,7 @@ if len(files) == 0:
 
 root = tk.Tk()
 app = SlideShow(files = files, sleep = sleep, master = root)
+
+# sys.setprofile(tracefunc)
+
 app.mainloop()
