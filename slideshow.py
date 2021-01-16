@@ -39,8 +39,6 @@ class SlideShow(tk.Frame):
         self.counter = 0
         self.repeat = 0
 
-        self.repeating = False
-
         self.img_id = None
         self.tk_img = None
 
@@ -79,10 +77,10 @@ class SlideShow(tk.Frame):
     def down_key(self, event):
         logging.info("down pressed")
 
-        if (self.seconds - 5) <= 0:
+        self.seconds -= 5
+
+        if self.seconds <= 0:
             self.seconds = 1
-        else:
-            self.seconds -= 5
 
         return
 
@@ -91,11 +89,11 @@ class SlideShow(tk.Frame):
     def left_key(self, event):
         logging.info("left pressed")
 
-        if (self.counter - 2) < 0:
-            self.counter = 0
-        else:
-            self.counter -= 2
+        self.counter -= 2
 
+        if self.counter < 0:
+            self.counter = 0
+ 
         self.after_cancel(self.timer)
         self.update()
 
