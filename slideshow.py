@@ -162,7 +162,10 @@ class SlideShow(tk.Frame):
         self.loc = 0;
 
         if (self.delay * len(self.frames)) < (self.seconds * 500):
-            self.repeat = int((self.seconds * 500) / (self.delay * len(self.frames)))
+            if (self.delay * len(self.frames)) > 0:
+                self.repeat = int((self.seconds * 500) / (self.delay * len(self.frames)))
+            else:
+                self.repeat = 50
 
         self.display_frame()
 
