@@ -139,9 +139,10 @@ class SlideShow(tk.Frame):
             self.after_cancel(self.timer)
 
         try:
-            self.delay = image.info['duration']
+            self.delay = int(image.info['duration'] / 2)
         except:
-            self.delay = 100
+            print("no duration, using 50")
+            self.delay = 50
 
         self.loc = 0;
 
