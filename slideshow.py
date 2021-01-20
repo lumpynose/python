@@ -16,13 +16,15 @@ import logging
 # left key goes back one,
 # right key goes forward one.
 class SlideShow(tk.Frame):
-    def __init__(self, files, sleep, master):
+    def __init__(self, directory, sleep, master, verbose):
         super().__init__(master)
 
-        self.images = files
+        self.directory = directory
         self.seconds = sleep
         self.master = master
-        self.timer = None;
+        self.verbose = verbose
+
+        self.timer = None
 
         self.pack()
         self.configure(bg = 'black')
@@ -43,12 +45,14 @@ class SlideShow(tk.Frame):
         self.tk_img = None
 
         self.master.bind('Q', self.quit)
-        self.master.bind('<Up>', self.up_key);
+        self.master.bind('<Up>', self.up_key)
         self.master.bind('<Down>', self.down_key)
         self.master.bind('<Left>', self.left_key)
         self.master.bind('<Right>', self.right_key)
 
         self.canvas = Canvas(self, highlightthickness = 0)
+
+        self.images = self.get_images(self.directory)
 
         random.shuffle(self.images)
 
@@ -57,6 +61,14 @@ class SlideShow(tk.Frame):
         return
 
     ###########################################
+
+    def get_images(self, directory):
+        files = DirTree().files(directory)
+        
+        if len(files) == 0:
+            sys.exit("nothing to display")
+            
+        return files
 
     def quit(self, event):
          logging.info("exiting")
@@ -68,7 +80,7 @@ class SlideShow(tk.Frame):
 
     def up_key(self, event):
         logging.info("up pressed")
-        self.seconds += 5;
+        self.seconds += 5
 
         return
 
@@ -119,6 +131,8 @@ class SlideShow(tk.Frame):
         self.counter += 1
 
         if self.counter >= len(self.images):
+            # re-read in case files were added or removed
+            self.images = self.get_images(self.directory)
             random.shuffle(self.images)
             self.counter = 0
  
@@ -144,7 +158,7 @@ class SlideShow(tk.Frame):
             print("no duration, using 50")
             self.delay = 50
 
-        self.loc = 0;
+        self.loc = 0
 
         self.display_frames(image)
 
@@ -178,8 +192,8 @@ class SlideShow(tk.Frame):
         ratio = min(self.basewidth / img_width, self.baseheight / img_height)
         logging.info("ratio: {}".format(ratio))
 
-        wsize = int(img_width * ratio);
-        hsize = int(img_height * ratio);
+        wsize = int(img_width * ratio)
+        hsize = int(img_height * ratio)
 
         logging.info("new size: {}/{}".format(wsize, hsize))
 
@@ -224,6 +238,9 @@ class SlideShow(tk.Frame):
 
     def main(self):
         image_name = self.images[self.counter]
+
+        if verbose:
+            print(image_name)
 
         logging.info("file: {}".format(image_name))
 
@@ -272,18 +289,21 @@ parser.add_argument('--sleep',
                     type = int,
                     default = 15)
 
+parser.add_argument('--verbose',
+                    nargs = '?',
+                    help = 'display file name',
+                    type = bool,
+                    const = True,
+                    default = False)
+
 args = parser.parse_args()
 
-dir = args.directory
+directory = args.directory
 sleep = args.sleep
-
-files = DirTree().files(dir)
-
-if len(files) == 0:
-    sys.exit("nothing to display")
+verbose = args.verbose
 
 root = tk.Tk()
-app = SlideShow(files = files, sleep = sleep, master = root)
+app = SlideShow(directory = directory, sleep = sleep, master = root, verbose = verbose)
 
 # sys.setprofile(tracefunc)
 
