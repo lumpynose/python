@@ -153,10 +153,14 @@ class SlideShow(tk.Frame):
             self.after_cancel(self.timer)
 
         try:
-            self.delay = int(image.info['duration'] / 2)
+            self.delay = int(image.info['duration'] / 12)
         except:
-            print("no duration, using 50")
+            if self.verbose:
+                print("no duration, using 50", flush = True)
             self.delay = 50
+
+        if self.verbose:
+            print("delay:", self.delay, flush = True)
 
         self.loc = 0
 
@@ -209,6 +213,8 @@ class SlideShow(tk.Frame):
     def display(self, image):
         new_img = self.resize_image(image)
         
+        image.close()
+
         # reload width and height with new resized values
         (img_width, img_height) = new_img.size
 
@@ -219,13 +225,15 @@ class SlideShow(tk.Frame):
             x_pad = (self.screen_width - img_width) / 2
 
         logging.info("pading: {}/{}".format(x_pad, y_pad))
-        
+
         try:
             self.tk_img = ImageTk.PhotoImage(new_img)
         except:
             logging.warning("exception in ImageTk.PhotoImage: {}".format(sys.exc_info()[0]))
 
-        # delete previous image
+        new_img.close()
+        
+        # delete previous image from canvas.create_image()
         self.canvas.delete(self.img_id)
 
         self.canvas.configure(width = img_width, height = img_height, highlightthickness = 0)
@@ -239,8 +247,8 @@ class SlideShow(tk.Frame):
     def main(self):
         image_name = self.images[self.counter]
 
-        if verbose:
-            print(image_name)
+        if self.verbose:
+            print(image_name, flush = True)
 
         logging.info("file: {}".format(image_name))
 
