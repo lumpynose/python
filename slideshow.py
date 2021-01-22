@@ -108,7 +108,12 @@ class SlideShow(tk.Frame):
         if self.counter < 0:
             self.counter = 0
  
-        self.after_cancel(self.timer)
+        if self.timer != None:
+            self.after_cancel(self.timer)
+
+            if self.verbose:
+                print("cancel", self.timer, flush = True)
+
         self.update()
 
         return
@@ -118,7 +123,12 @@ class SlideShow(tk.Frame):
     def right_key(self, event = None):
         logging.info("right pressed")
 
-        self.after_cancel(self.timer)
+        if self.timer != None:
+            self.after_cancel(self.timer)
+
+            if self.verbose:
+                print("cancel", self.timer, flush = True)
+        
         self.update()
 
         return
@@ -141,6 +151,12 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def update(self):
+        if self.timer != None:
+            self.after_cancel(self.timer)
+
+            if self.verbose:
+                print("cancel", self.timer, flush = True)
+        
         self.timer = self.after(self.seconds * 1000, lambda: self.update())
 
         self.main()
@@ -174,10 +190,11 @@ class SlideShow(tk.Frame):
             self.after_cancel(self.timer)
 
         try:
-            self.delay = int(image.info['duration'] / 12)
+            self.delay = int(image.info['duration'] / 2)
         except:
             if self.verbose:
                 print("no duration, using 50", flush = True)
+
             self.delay = 50
 
         if self.verbose:
@@ -200,10 +217,13 @@ class SlideShow(tk.Frame):
 
             return
 
-        self.display(frame)
+        self.display_image(frame)
 
         self.loc += 1
 
+        if self.timer != None:
+            self.after_cancel(self.timer)
+        
         self.timer = self.after(self.delay, lambda: self.display_gif_frames(image))
 
         return
@@ -231,7 +251,7 @@ class SlideShow(tk.Frame):
 
     ###########################################
 
-    def display(self, image):
+    def display_image(self, image):
         new_img = self.resize_image(image)
         
         image.close()
@@ -284,7 +304,7 @@ class SlideShow(tk.Frame):
 
             return
 
-        self.display(base_img)
+        self.display_image(base_img)
 
         return
 
