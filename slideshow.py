@@ -9,6 +9,7 @@ import random
 import sys
 import argparse
 import logging
+import time
 
 # display a full screen slide show.
 # Q key quits, up key adds 5 seconds to the delay,
@@ -24,7 +25,8 @@ class SlideShow(tk.Frame):
         self.root = root
         self.verbose = verbose
 
-        self.timer = None
+        self.timer_outer = None
+        self.timer_gif = None
 
         self.pack()
         self.configure(bg = 'black')
@@ -40,6 +42,7 @@ class SlideShow(tk.Frame):
 
         self.counter = 0
         self.repeat = 0
+        self.end_time = 0
 
         self.img_id = None
         self.tk_img = None
@@ -57,8 +60,6 @@ class SlideShow(tk.Frame):
         self.files = self.get_files(self.directory)
 
         random.shuffle(self.files)
-
-        self.update()
 
         return
 
@@ -108,11 +109,9 @@ class SlideShow(tk.Frame):
         if self.counter < 0:
             self.counter = 0
  
-        if self.timer != None:
-            self.after_cancel(self.timer)
-
-            if self.verbose:
-                print("cancel", self.timer, flush = True)
+        if self.timer_outer != None:
+            self.after_cancel(self.timer_outer)
+            self.timer_outer = None
 
         self.update()
 
@@ -123,12 +122,10 @@ class SlideShow(tk.Frame):
     def right_key(self, event = None):
         logging.info("right pressed")
 
-        if self.timer != None:
-            self.after_cancel(self.timer)
+        if self.timer_outer != None:
+            self.after_cancel(self.timer_outer)
+            self.timer_outer = None
 
-            if self.verbose:
-                print("cancel", self.timer, flush = True)
-        
         self.update()
 
         return
@@ -145,86 +142,6 @@ class SlideShow(tk.Frame):
         menu.add_command(label = 'Quit', command = self.quitss);
 
         root.bind('<3>', lambda e: menu.post(e.x_root, e.y_root))
-
-        return
-
-    ###########################################
-
-    def update(self):
-        if self.timer != None:
-            self.after_cancel(self.timer)
-
-            if self.verbose:
-                print("cancel", self.timer, flush = True)
-        
-        self.timer = self.after(self.seconds * 1000, lambda: self.update())
-
-        self.display_file()
-
-        self.counter += 1
-
-        if self.counter >= len(self.files):
-            # re-read in case files were added or removed
-            self.files = self.get_files(self.directory)
-            random.shuffle(self.files)
-            self.counter = 0
- 
-        return
-
-    ###########################################
-
-    def is_gif(self, image_name):
-        if (image_name.endswith(".gif")):
-            return(True)
-
-        return(False)
-
-    ###########################################
-
-    # This used to do more, unrolling the frames and storing
-    # them in an array which display_gif_frames() displayed.  Now
-    # display_gif_frames() fetches the individual frames and displays
-    # them.
-    def display_gif(self, image):
-        if self.timer != None:
-            self.after_cancel(self.timer)
-
-        try:
-            self.delay = int(image.info['duration'] / 2)
-        except:
-            if self.verbose:
-                print("no duration, using 50", flush = True)
-
-            self.delay = 50
-
-        if self.verbose:
-            print("delay:", self.delay, flush = True)
-
-        self.loc = 0
-
-        self.display_gif_frames(image)
-
-        return
-
-    ###########################################
-
-    def display_gif_frames(self, image):
-        try:
-            image.seek(self.loc)
-            frame = image.copy()
-        except:
-            self.update()
-
-            return
-
-        self.display_image(frame)
-
-        self.loc += 1
-
-        if self.timer != None:
-            self.after_cancel(self.timer)
-        
-        self.timer = self.after(self.delay, lambda: self.display_gif_frames(image))
 
         return
 
@@ -248,6 +165,120 @@ class SlideShow(tk.Frame):
             logging.warning("exception in ImageOps.scale: {}".format(sys.exc_info()[0]))
 
         return(new_img)
+
+    ###########################################
+
+    def is_gif(self, image_name):
+        if (image_name.endswith(".gif")):
+            return(True)
+
+        return(False)
+
+    ###########################################
+
+    def update(self):
+        if self.timer_outer != None:
+            self.after_cancel(self.timer_outer)
+
+            self.timer_outer = None
+   
+        self.display_file()
+
+        self.counter += 1
+
+        if self.counter >= len(self.files):
+            # re-read in case files were added or removed
+            self.files = self.get_files(self.directory)
+            random.shuffle(self.files)
+            self.counter = 0
+ 
+        self.timer_outer = self.after(self.seconds * 1000, lambda: self.update())
+
+        return
+
+    ###########################################
+
+    # This used to do more, unrolling the frames and storing
+    # them in an array which display_gif_frames() displayed.  Now
+    # display_gif_frames() fetches the individual frames and displays
+    # them.
+    def display_gif(self, image):
+        if self.timer_gif != None:
+            self.after_cancel(self.timer_gif)
+            self.timer_gif = None
+
+        if self.timer_outer != None:
+            self.after_cancel(self.timer_outer)
+            self.timer_outer = None
+
+        try:
+            self.delay = int(image.info['duration'] / 4)
+        except:
+            logging.info("no duration, using 50")
+
+            if self.verbose:
+                print("no duration, using 50", flush = True)
+
+            self.delay = 50
+
+        self.loc = 0
+        self.repeat = 0
+
+        self.end_time = time.time() + self.seconds
+
+        self.display_gif_frames(image)
+
+        return
+
+    ###########################################
+
+    def display_gif_frames(self, image):
+        if self.timer_gif != None:
+            self.after_cancel(self.timer_gif)
+            self.timer_gif = None
+
+        if self.timer_outer != None:
+            self.after_cancel(self.timer_outer)
+            self.timer_outer = None
+
+        try:
+            image.seek(self.loc)
+            frame = image.copy()
+        except:
+            now = time.time()
+
+            if now > self.end_time:
+                logging.info("frames: {}, delay: {}, repeats: {}"
+                             .format(self.loc - 1, self.delay, self.repeat))
+
+                if self.verbose:
+                    print("frames: {}, delay: {}, repeats: {}"
+                          .format(self.loc - 1, self.delay, self.repeat),
+                          flush = True)
+
+                self.update()
+
+                return
+
+            self.repeat += 1;
+
+            self.loc = 0;
+
+            self.timer_gif = self.after(self.delay, lambda: self.display_gif_frames(image))
+
+            return
+
+        self.display_image(frame)
+
+        self.loc += 1
+
+        if self.timer_gif != None:
+            self.after_cancel(self.timer_gif)
+            self.timer_gif = None
+
+        self.timer_gif = self.after(self.delay, lambda: self.display_gif_frames(image))
+
+        return
 
     ###########################################
 
@@ -291,9 +322,6 @@ class SlideShow(tk.Frame):
     def display_file(self):
         file_name = self.files[self.counter]
 
-        if self.verbose:
-            print(file_name, flush = True)
-
         logging.info("file: {}".format(file_name))
 
         try:
@@ -330,23 +358,22 @@ logging.basicConfig(level = logging.WARNING)
 
 parser = argparse.ArgumentParser(description = 'Display some images.')
 
-parser.add_argument('directory',
-                    nargs = '?',
-                    help = 'The directory of images',
-                    default = "/home/rusty/pics")
-
 parser.add_argument('--sleep',
-                    nargs = '?',
                     help = 'How long to pause between images',
                     type = int,
                     default = 15)
 
 parser.add_argument('--verbose',
-                    nargs = '?',
-                    help = 'display file name',
-                    type = bool,
+                    help = 'display stuff',
+                    action = 'store_const',
                     const = True,
                     default = False)
+
+parser.add_argument('directory',
+                    help = 'The directory of images',
+                    type = str,
+                    nargs = '?',
+                    default = "/home/rusty/pics")
 
 args = parser.parse_args()
 
@@ -354,9 +381,15 @@ directory = args.directory
 sleep = args.sleep
 verbose = args.verbose
 
+if verbose:
+    print(args)
+
 root = tk.Tk()
-app = SlideShow(directory = directory, sleep = sleep, root = root, verbose = verbose)
+
+slideshow = SlideShow(directory = directory, sleep = sleep, root = root, verbose = verbose)
+
+slideshow.update()
 
 # sys.setprofile(tracefunc)
 
-app.mainloop()
+slideshow.mainloop()
