@@ -29,14 +29,14 @@ class SlideShow(tk.Frame):
         self.pack()
         self.configure(bg = 'black')
 
-        self.screen_width = self.root.winfo_screenwidth()
-        self.screen_height = self.root.winfo_screenheight()
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
 
-        logging.info("{}, {}".format(self.screen_width, self.screen_height))
+        logging.info("{}, {}".format(screen_width, screen_height))
 
         # - 2 to show any errant borders
-        self.basewidth = self.screen_width - 2
-        self.baseheight = self.screen_height - 2
+        self.basewidth = screen_width - 2
+        self.baseheight = screen_height - 2
 
         self.counter = 0
         self.repeat = 0
@@ -54,9 +54,9 @@ class SlideShow(tk.Frame):
 
         self.canvas = Canvas(self, highlightthickness = 0)
 
-        self.images = self.get_images(self.directory)
+        self.files = self.get_files(self.directory)
 
-        random.shuffle(self.images)
+        random.shuffle(self.files)
 
         self.update()
 
@@ -64,7 +64,7 @@ class SlideShow(tk.Frame):
 
     ###########################################
 
-    def get_images(self, directory):
+    def get_files(self, directory):
         files = DirTree().files(directory)
         
         if len(files) == 0:
@@ -159,14 +159,14 @@ class SlideShow(tk.Frame):
         
         self.timer = self.after(self.seconds * 1000, lambda: self.update())
 
-        self.main()
+        self.display_file()
 
         self.counter += 1
 
-        if self.counter >= len(self.images):
+        if self.counter >= len(self.files):
             # re-read in case files were added or removed
-            self.images = self.get_images(self.directory)
-            random.shuffle(self.images)
+            self.files = self.get_files(self.directory)
+            random.shuffle(self.files)
             self.counter = 0
  
         return
@@ -258,13 +258,17 @@ class SlideShow(tk.Frame):
 
         (img_width, img_height) = new_img.size
 
-        if img_height < self.screen_height:
-            y_pad = (self.screen_height - img_height) / 2
+        (x_pad, y_pad) = 0, 0
 
-        if img_width < self.screen_width:
-            x_pad = (self.screen_width - img_width) / 2
+        if img_height < self.baseheight:
+            y_pad = (self.baseheight - img_height) / 2
+
+        if img_width < self.basewidth:
+            x_pad = (self.basewidth - img_width) / 2
 
         logging.info("pading: {}/{}".format(x_pad, y_pad))
+
+        # need to store tk_img outside or it gets garbage collected?
 
         try:
             self.tk_img = ImageTk.PhotoImage(new_img)
@@ -284,22 +288,22 @@ class SlideShow(tk.Frame):
 
     ###########################################
 
-    def main(self):
-        image_name = self.images[self.counter]
+    def display_file(self):
+        file_name = self.files[self.counter]
 
         if self.verbose:
-            print(image_name, flush = True)
+            print(file_name, flush = True)
 
-        logging.info("file: {}".format(image_name))
+        logging.info("file: {}".format(file_name))
 
         try:
-            base_img = ImageTk.Image.open(image_name)
+            base_img = ImageTk.Image.open(file_name)
         except:
-            logging.warning("exception in Image.open: {}, {}".format(sys.exc_info()[0], image_name))
+            logging.warning("exception in Image.open: {}, {}".format(sys.exc_info()[0], file_name))
 
             return
 
-        if self.is_gif(image_name):
+        if self.is_gif(file_name):
             self.display_gif(base_img)
 
             return
