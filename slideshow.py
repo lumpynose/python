@@ -16,12 +16,12 @@ import logging
 # left key goes back one,
 # right key goes forward one.
 class SlideShow(tk.Frame):
-    def __init__(self, directory, sleep, master, verbose):
-        super().__init__(master)
+    def __init__(self, directory, sleep, root, verbose):
+        super().__init__(root)
 
         self.directory = directory
         self.seconds = sleep
-        self.master = master
+        self.root = root
         self.verbose = verbose
 
         self.timer = None
@@ -29,8 +29,8 @@ class SlideShow(tk.Frame):
         self.pack()
         self.configure(bg = 'black')
 
-        self.screen_width = self.master.winfo_screenwidth()
-        self.screen_height = self.master.winfo_screenheight()
+        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = self.root.winfo_screenheight()
 
         logging.info("{}, {}".format(self.screen_width, self.screen_height))
 
@@ -44,11 +44,13 @@ class SlideShow(tk.Frame):
         self.img_id = None
         self.tk_img = None
 
-        self.master.bind('Q', self.quit)
-        self.master.bind('<Up>', self.up_key)
-        self.master.bind('<Down>', self.down_key)
-        self.master.bind('<Left>', self.left_key)
-        self.master.bind('<Right>', self.right_key)
+        self.root.bind('Q', self.quitss)
+        self.root.bind('<Up>', self.up_key)
+        self.root.bind('<Down>', self.down_key)
+        self.root.bind('<Left>', self.left_key)
+        self.root.bind('<Right>', self.right_key)
+
+        self.add_menu(self.root)
 
         self.canvas = Canvas(self, highlightthickness = 0)
 
@@ -70,15 +72,15 @@ class SlideShow(tk.Frame):
             
         return files
 
-    def quit(self, event):
+    def quitss(self, event = None):
          logging.info("exiting")
-         self.master.destroy()
+         self.root.destroy()
 
          return
 
     ###########################################
 
-    def up_key(self, event):
+    def up_key(self, event = None):
         logging.info("up pressed")
         self.seconds += 5
 
@@ -86,7 +88,7 @@ class SlideShow(tk.Frame):
 
     ###########################################
 
-    def down_key(self, event):
+    def down_key(self, event = None):
         logging.info("down pressed")
 
         self.seconds -= 5
@@ -98,7 +100,7 @@ class SlideShow(tk.Frame):
 
     ###########################################
 
-    def left_key(self, event):
+    def left_key(self, event = None):
         logging.info("left pressed")
 
         self.counter -= 2
@@ -113,11 +115,26 @@ class SlideShow(tk.Frame):
 
     ###########################################
 
-    def right_key(self, event):
+    def right_key(self, event = None):
         logging.info("right pressed")
 
         self.after_cancel(self.timer)
         self.update()
+
+        return
+
+    ###########################################
+
+    def add_menu(self, root):
+        root.option_add('*tearOff', False)
+
+        menu = tk.Menu(root)
+
+        menu.add_command(label = 'Previous', command = self.left_key);
+        menu.add_command(label = 'Next', command = self.right_key);
+        menu.add_command(label = 'Quit', command = self.quitss);
+
+        root.bind('<3>', lambda e: menu.post(e.x_root, e.y_root))
 
         return
 
@@ -148,6 +165,10 @@ class SlideShow(tk.Frame):
 
     ###########################################
 
+    # This used to do more, unrolling the frames and storing
+    # them in an array which display_gif_frames() displayed.  Now
+    # display_gif_frames() fetches the individual frames and displays
+    # them.
     def display_gif(self, image):
         if self.timer != None:
             self.after_cancel(self.timer)
@@ -164,13 +185,13 @@ class SlideShow(tk.Frame):
 
         self.loc = 0
 
-        self.display_frames(image)
+        self.display_gif_frames(image)
 
         return
 
     ###########################################
 
-    def display_frames(self, image):
+    def display_gif_frames(self, image):
         try:
             image.seek(self.loc)
             frame = image.copy()
@@ -183,7 +204,7 @@ class SlideShow(tk.Frame):
 
         self.loc += 1
 
-        self.timer = self.after(self.delay, lambda: self.display_frames(image))
+        self.timer = self.after(self.delay, lambda: self.display_gif_frames(image))
 
         return
 
@@ -215,7 +236,6 @@ class SlideShow(tk.Frame):
         
         image.close()
 
-        # reload width and height with new resized values
         (img_width, img_height) = new_img.size
 
         if img_height < self.screen_height:
@@ -282,7 +302,7 @@ def tracefunc(frame, event, arg, indent=[0]):
 ###########################################
 
 #logging.basicConfig(filename = '/tmp/slideshow.log', level=logging.WARNING)
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level = logging.WARNING)
 
 parser = argparse.ArgumentParser(description = 'Display some images.')
 
@@ -311,7 +331,7 @@ sleep = args.sleep
 verbose = args.verbose
 
 root = tk.Tk()
-app = SlideShow(directory = directory, sleep = sleep, master = root, verbose = verbose)
+app = SlideShow(directory = directory, sleep = sleep, root = root, verbose = verbose)
 
 # sys.setprofile(tracefunc)
 
