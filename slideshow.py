@@ -73,6 +73,8 @@ class SlideShow(tk.Frame):
             
         return files
 
+    ###########################################
+
     def quitss(self, event = None):
          logging.info("exiting")
          self.root.destroy()
