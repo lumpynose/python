@@ -230,6 +230,10 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def display_gif_frames(self, image):
+        if self.timer_outer != None:
+            self.root.after_cancel(self.timer_outer)
+            self.timer_outer = None
+
         try:
             image.seek(self.frame_num)
             frame = image.copy()
