@@ -5,18 +5,22 @@ from tkinter import Canvas
 from PIL import ImageTk, ImageOps
 import PIL as pil
 from dirtree import DirTree
+from datetime import datetime
 import random
 import sys
 import argparse
 import logging
 import time
 
-# display a full screen slide show.
-# Q key quits, up key adds 5 seconds to the delay,
-# down key subtracts 5 seconds from the delay,
-# left key goes back one,
-# right key goes forward one.
 class SlideShow(tk.Frame):
+    """Display a full screen slide show.
+
+    Q key quits, up key adds 5 seconds to the delay,
+    down key subtracts 5 seconds from the delay,
+    left key goes back one,
+    right key goes forward one.
+    """
+
     def __init__(self, directory, sleep, root, verbose):
         super().__init__(root)
 
@@ -112,7 +116,7 @@ class SlideShow(tk.Frame):
             self.counter = 0
  
         if self.timer_outer != None:
-            self.after_cancel(self.timer_outer)
+            self.root.after_cancel(self.timer_outer)
             self.timer_outer = None
 
         self.update()
@@ -125,7 +129,7 @@ class SlideShow(tk.Frame):
         logging.info("right pressed")
 
         if self.timer_outer != None:
-            self.after_cancel(self.timer_outer)
+            self.root.after_cancel(self.timer_outer)
             self.timer_outer = None
 
         self.update()
@@ -179,11 +183,6 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def update(self):
-        if self.timer_outer != None:
-            self.after_cancel(self.timer_outer)
-
-            self.timer_outer = None
-   
         self.display_file()
 
         self.counter += 1
@@ -194,7 +193,7 @@ class SlideShow(tk.Frame):
             random.shuffle(self.files)
             self.counter = 0
  
-        self.timer_outer = self.after(self.seconds * 1000, lambda: self.update())
+        self.timer_outer = self.root.after(self.seconds * 1000, lambda: self.update())
 
         return
 
@@ -205,12 +204,8 @@ class SlideShow(tk.Frame):
     # display_gif_frames() fetches the individual frames and displays
     # them.
     def display_gif(self, image):
-        if self.timer_gif != None:
-            self.after_cancel(self.timer_gif)
-            self.timer_gif = None
-
         if self.timer_outer != None:
-            self.after_cancel(self.timer_outer)
+            self.root.after_cancel(self.timer_outer)
             self.timer_outer = None
 
         try:
@@ -223,7 +218,7 @@ class SlideShow(tk.Frame):
 
             self.delay = 50
 
-        self.loc = 0
+        self.frame_num = 0
         self.repeat = 0
 
         self.end_time = time.time() + self.seconds
@@ -235,27 +230,21 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def display_gif_frames(self, image):
-        if self.timer_gif != None:
-            self.after_cancel(self.timer_gif)
-            self.timer_gif = None
-
-        if self.timer_outer != None:
-            self.after_cancel(self.timer_outer)
-            self.timer_outer = None
-
         try:
-            image.seek(self.loc)
+            image.seek(self.frame_num)
             frame = image.copy()
         except:
             now = time.time()
 
             if now > self.end_time:
                 logging.info("frames: {}, delay: {}, repeats: {}"
-                             .format(self.loc - 1, self.delay, self.repeat))
+                             .format(self.frame_num - 1, self.delay, self.repeat))
 
                 if self.verbose:
-                    print("frames: {}, delay: {}, repeats: {}"
-                          .format(self.loc - 1, self.delay, self.repeat),
+                    print("{}, {}, {}"
+                          .format((self.frame_num - 1) * self.delay,
+                                  self.repeat,
+                                  datetime.today().ctime()),
                           flush = True)
 
                 self.update()
@@ -264,21 +253,13 @@ class SlideShow(tk.Frame):
 
             self.repeat += 1;
 
-            self.loc = 0;
+            self.frame_num = 0;
+        else:
+            self.display_image(frame)
 
-            self.timer_gif = self.after(self.delay, lambda: self.display_gif_frames(image))
+            self.frame_num += 1
 
-            return
-
-        self.display_image(frame)
-
-        self.loc += 1
-
-        if self.timer_gif != None:
-            self.after_cancel(self.timer_gif)
-            self.timer_gif = None
-
-        self.timer_gif = self.after(self.delay, lambda: self.display_gif_frames(image))
+        self.timer_gif = self.root.after(self.delay, lambda: self.display_gif_frames(image))
 
         return
 
@@ -390,8 +371,11 @@ root = tk.Tk()
 
 slideshow = SlideShow(directory = directory, sleep = sleep, root = root, verbose = verbose)
 
+print(slideshow.__doc__)
+
+# Displays the first frame and starts the timer.
 slideshow.update()
 
 # sys.setprofile(tracefunc)
 
-slideshow.mainloop()
+root.mainloop()
