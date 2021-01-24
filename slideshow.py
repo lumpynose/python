@@ -157,6 +157,12 @@ class SlideShow(tk.Frame):
         (img_width, img_height) = image.size
         logging.info("orig {}/{}".format(img_width, img_height))
 
+        if (img_width < self.basewidth) and (img_height < self.baseheight):
+            new_img = image.copy()
+            image.close()
+
+            return(new_img)
+        
         ratio = min(self.basewidth / img_width, self.baseheight / img_height)
         logging.info("ratio: {}".format(ratio))
 
@@ -169,6 +175,8 @@ class SlideShow(tk.Frame):
             new_img = ImageOps.scale(image, ratio)
         except:
             logging.warning("exception in ImageOps.scale: {}".format(sys.exc_info()[0]))
+
+        image.close()
 
         return(new_img)
 
@@ -251,6 +259,8 @@ class SlideShow(tk.Frame):
                                   datetime.today().ctime()),
                           flush = True)
 
+                image.close()
+
                 self.update()
 
                 return
@@ -272,8 +282,6 @@ class SlideShow(tk.Frame):
     def display_image(self, image):
         new_img = self.resize_image(image)
         
-        image.close()
-
         (img_width, img_height) = new_img.size
 
         (x_pad, y_pad) = 0, 0
@@ -324,6 +332,8 @@ class SlideShow(tk.Frame):
             return
 
         self.display_image(base_img)
+
+        base_img.close()
 
         return
 
