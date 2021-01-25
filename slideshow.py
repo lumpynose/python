@@ -194,7 +194,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def update(self):
-        print(inspect.currentframe().f_code.co_name)
+        #print(inspect.currentframe().f_code.co_name)
         if self.counter >= len(self.files):
             # re-read in case files were added or removed
             self.files = self.get_files(self.directory)
@@ -219,7 +219,7 @@ class SlideShow(tk.Frame):
     # display_gif_frames() fetches the individual frames and displays
     # them.
     def display_gif(self, image):
-        print(inspect.currentframe().f_code.co_name)
+        #print(inspect.currentframe().f_code.co_name)
         #if self.timer_outer != None:
         #    self.root.after_cancel(self.timer_outer)
         #    self.timer_outer = None
@@ -246,7 +246,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def display_gif_frames(self, image):
-        print(inspect.currentframe().f_code.co_name)
+        #print(inspect.currentframe().f_code.co_name)
         if self.timer_outer != None:
             self.root.after_cancel(self.timer_outer)
             self.timer_outer = None
@@ -294,7 +294,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def display_image(self, image):
-        print(inspect.currentframe().f_code.co_name)
+        #print(inspect.currentframe().f_code.co_name)
         new_img = self.resize_image(image)
         
         (img_width, img_height) = new_img.size
@@ -330,7 +330,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def display_file(self):
-        print(inspect.currentframe().f_code.co_name)
+        #print(inspect.currentframe().f_code.co_name)
         file_name = self.files[self.counter]
 
         logging.info("file: {}".format(file_name))
