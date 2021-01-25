@@ -22,13 +22,14 @@ class SlideShow(tk.Frame):
     right key goes forward one.
     """
 
-    def __init__(self, directory, sleep, root, verbose):
+    def __init__(self, directory, sleep, root, verbose, upscale):
         super().__init__(root)
 
         self.directory = directory
         self.seconds = sleep
         self.root = root
         self.verbose = verbose
+        self.upscale = upscale
 
         self.timer_outer = None
         self.timer_gif = None
@@ -160,18 +161,19 @@ class SlideShow(tk.Frame):
     def resize_image(self, image):
         #print(inspect.currentframe().f_code.co_name)
         (img_width, img_height) = image.size
+
         logging.info("orig {}/{}".format(img_width, img_height))
 
-        if (img_width < self.basewidth) and (img_height < self.baseheight):
+        if not self.upscale and ((img_width <= self.basewidth) and (img_height <= self.baseheight)):
             ratio = 1
         else:
             ratio = min(self.basewidth / img_width, self.baseheight / img_height)
             logging.info("ratio: {}".format(ratio))
 
-            wsize = int(img_width * ratio)
-            hsize = int(img_height * ratio)
+        wsize = int(img_width * ratio)
+        hsize = int(img_height * ratio)
 
-            logging.info("new size: {}/{}".format(wsize, hsize))
+        logging.info("new size: {}/{}".format(wsize, hsize))
 
         try:
             new_img = ImageOps.scale(image, ratio)
@@ -360,16 +362,22 @@ logging.basicConfig(level = logging.WARNING)
 
 parser = argparse.ArgumentParser(description = 'Display some images.')
 
-parser.add_argument('--sleep',
-                    help = 'How long to pause between images',
-                    type = int,
-                    default = 15)
-
 parser.add_argument('--verbose',
                     help = 'display stuff',
                     action = 'store_const',
                     const = True,
                     default = False)
+
+parser.add_argument('--upscale',
+                    help = 'upscale images',
+                    action = 'store_const',
+                    const = True,
+                    default = False)
+
+parser.add_argument('--sleep',
+                    help = 'How long to pause between images',
+                    type = int,
+                    default = 15)
 
 parser.add_argument('directory',
                     help = 'The directory of images',
@@ -382,13 +390,18 @@ args = parser.parse_args()
 directory = args.directory
 sleep = args.sleep
 verbose = args.verbose
+upscale = args.upscale
 
 if verbose:
     print(args)
 
 root = tk.Tk()
 
-slideshow = SlideShow(directory = directory, sleep = sleep, root = root, verbose = verbose)
+slideshow = SlideShow(directory = directory,
+                      sleep = sleep,
+                      root = root,
+                      verbose = verbose,
+                      upscale = upscale)
 
 # Displays the first frame and starts the timer.
 slideshow.update()
