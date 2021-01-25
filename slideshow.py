@@ -11,6 +11,7 @@ import sys
 import argparse
 import logging
 import time
+import inspect
 
 class SlideShow(tk.Frame):
     """Display a full screen slide show.
@@ -61,15 +62,16 @@ class SlideShow(tk.Frame):
 
         self.canvas = Canvas(self, highlightthickness = 0)
 
-        self.files = self.get_files(self.directory)
-
-        random.shuffle(self.files)
+        # self.files = self.get_files(self.directory)
+        # random.shuffle(self.files)
+        self.files = []
 
         return
 
     ###########################################
 
     def get_files(self, directory):
+        #print(inspect.currentframe().f_code.co_name)
         files = DirTree().files(directory)
         
         if len(files) == 0:
@@ -80,10 +82,10 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def quitss(self, event = None):
-         logging.info("exiting")
-         self.root.destroy()
+        logging.info("exiting")
+        self.root.destroy()
 
-         return
+        return
 
     ###########################################
 
@@ -132,6 +134,8 @@ class SlideShow(tk.Frame):
             self.root.after_cancel(self.timer_outer)
             self.timer_outer = None
 
+        self.counter += 1
+
         self.update()
 
         return
@@ -154,22 +158,20 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def resize_image(self, image):
+        #print(inspect.currentframe().f_code.co_name)
         (img_width, img_height) = image.size
         logging.info("orig {}/{}".format(img_width, img_height))
 
         if (img_width < self.basewidth) and (img_height < self.baseheight):
-            new_img = image.copy()
-            image.close()
+            ratio = 1
+        else:
+            ratio = min(self.basewidth / img_width, self.baseheight / img_height)
+            logging.info("ratio: {}".format(ratio))
 
-            return(new_img)
-        
-        ratio = min(self.basewidth / img_width, self.baseheight / img_height)
-        logging.info("ratio: {}".format(ratio))
+            wsize = int(img_width * ratio)
+            hsize = int(img_height * ratio)
 
-        wsize = int(img_width * ratio)
-        hsize = int(img_height * ratio)
-
-        logging.info("new size: {}/{}".format(wsize, hsize))
+            logging.info("new size: {}/{}".format(wsize, hsize))
 
         try:
             new_img = ImageOps.scale(image, ratio)
@@ -183,6 +185,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def is_gif(self, image_name):
+        #print(inspect.currentframe().f_code.co_name)
         if (image_name.endswith(".gif")):
             return(True)
 
@@ -191,16 +194,20 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def update(self):
-        self.display_file()
-
-        self.counter += 1
-
+        print(inspect.currentframe().f_code.co_name)
         if self.counter >= len(self.files):
             # re-read in case files were added or removed
             self.files = self.get_files(self.directory)
             random.shuffle(self.files)
             self.counter = 0
  
+        self.display_file()
+
+        self.counter += 1
+
+        #if self.counter == 2:
+        #    self.root.destroy()
+
         self.timer_outer = self.root.after(self.seconds * 1000, lambda: self.update())
 
         return
@@ -212,9 +219,10 @@ class SlideShow(tk.Frame):
     # display_gif_frames() fetches the individual frames and displays
     # them.
     def display_gif(self, image):
-        if self.timer_outer != None:
-            self.root.after_cancel(self.timer_outer)
-            self.timer_outer = None
+        print(inspect.currentframe().f_code.co_name)
+        #if self.timer_outer != None:
+        #    self.root.after_cancel(self.timer_outer)
+        #    self.timer_outer = None
 
         try:
             self.delay = int(image.info['duration'] / 4)
@@ -238,6 +246,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def display_gif_frames(self, image):
+        print(inspect.currentframe().f_code.co_name)
         if self.timer_outer != None:
             self.root.after_cancel(self.timer_outer)
             self.timer_outer = None
@@ -268,10 +277,15 @@ class SlideShow(tk.Frame):
             self.repeat += 1;
 
             self.frame_num = 0;
-        else:
-            self.display_image(frame)
+            self.timer_gif = self.root.after(self.delay, lambda: self.display_gif_frames(image))
 
-            self.frame_num += 1
+            return
+
+        self.display_image(frame)
+
+        frame.close()
+
+        self.frame_num += 1
 
         self.timer_gif = self.root.after(self.delay, lambda: self.display_gif_frames(image))
 
@@ -280,6 +294,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def display_image(self, image):
+        print(inspect.currentframe().f_code.co_name)
         new_img = self.resize_image(image)
         
         (img_width, img_height) = new_img.size
@@ -315,6 +330,7 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def display_file(self):
+        print(inspect.currentframe().f_code.co_name)
         file_name = self.files[self.counter]
 
         logging.info("file: {}".format(file_name))
@@ -336,17 +352,6 @@ class SlideShow(tk.Frame):
         base_img.close()
 
         return
-
-###########################################
-
-def tracefunc(frame, event, arg, indent=[0]):
-    if event == "call":
-        indent[0] += 2
-        print("-" * indent[0] + "> call function", frame.f_code.co_name)
-    elif event == "return":
-        print("<" + "-" * indent[0], "exit function", frame.f_code.co_name)
-        indent[0] -= 2
-        return tracefunc
 
 ###########################################
 
@@ -385,11 +390,7 @@ root = tk.Tk()
 
 slideshow = SlideShow(directory = directory, sleep = sleep, root = root, verbose = verbose)
 
-print(slideshow.__doc__)
-
 # Displays the first frame and starts the timer.
 slideshow.update()
-
-# sys.setprofile(tracefunc)
 
 root.mainloop()
