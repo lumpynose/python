@@ -122,7 +122,7 @@ class SlideShow(tk.Frame):
             self.root.after_cancel(self.timer_outer)
             self.timer_outer = None
 
-        self.update()
+        self.display_file()
 
         return
 
@@ -137,7 +137,7 @@ class SlideShow(tk.Frame):
 
         self.counter += 1
 
-        self.update()
+        self.display_file()
 
         return
 
@@ -197,20 +197,8 @@ class SlideShow(tk.Frame):
 
     def update(self):
         #print(inspect.currentframe().f_code.co_name)
-        if self.counter >= len(self.files):
-            # re-read in case files were added or removed
-            self.files = self.get_files(self.directory)
-            random.shuffle(self.files)
-            self.counter = 0
  
         self.display_file()
-
-        self.counter += 1
-
-        #if self.counter == 2:
-        #    self.root.destroy()
-
-        self.timer_outer = self.root.after(self.seconds * 1000, lambda: self.update())
 
         return
 
@@ -272,7 +260,7 @@ class SlideShow(tk.Frame):
 
                 image.close()
 
-                self.update()
+                self.display_file()
 
                 return
 
@@ -333,9 +321,19 @@ class SlideShow(tk.Frame):
 
     def display_file(self):
         #print(inspect.currentframe().f_code.co_name)
+
+        # true first time through
+        if self.counter >= len(self.files):
+            # re-read in case files were added or removed
+            self.files = self.get_files(self.directory)
+            random.shuffle(self.files)
+            self.counter = 0
+
         file_name = self.files[self.counter]
 
         logging.info("file: {}".format(file_name))
+
+        self.counter += 1
 
         try:
             base_img = ImageTk.Image.open(file_name)
@@ -352,6 +350,8 @@ class SlideShow(tk.Frame):
         self.display_image(base_img)
 
         base_img.close()
+
+        self.timer_outer = self.root.after(self.seconds * 1000, lambda: self.display_file())
 
         return
 
@@ -404,6 +404,6 @@ slideshow = SlideShow(directory = directory,
                       upscale = upscale)
 
 # Displays the first frame and starts the timer.
-slideshow.update()
+slideshow.display_file()
 
 root.mainloop()
