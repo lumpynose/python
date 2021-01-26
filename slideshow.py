@@ -2,7 +2,7 @@
 
 import tkinter as tk
 from tkinter import Canvas
-from PIL import ImageTk, ImageOps
+from PIL import Image, ImageTk, ImageOps
 import PIL as pil
 from dirtree import DirTree
 from datetime import datetime
@@ -336,7 +336,8 @@ class SlideShow(tk.Frame):
         self.counter += 1
 
         try:
-            base_img = ImageTk.Image.open(file_name)
+            # base_img = ImageTk.Image.open(file_name)
+            base_img = Image.open(file_name)
         except:
             logging.warning("exception in Image.open: {}, {}".format(sys.exc_info()[0], file_name))
 
