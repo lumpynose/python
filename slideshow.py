@@ -256,11 +256,12 @@ class SlideShow(ttk.Frame):
                              .format(self.frame_num - 1, self.delay, self.repeat))
 
                 if self.verbose:
-                    print("{}, {}, {}"
+                    print("dur: {}, reps: {}, frames: {}, {}"
                           .format((self.frame_num - 1) * self.delay,
                                   self.repeat,
+                                  len(inspect.stack()),
                                   datetime.today().ctime()),
-                          flush = True)
+                     flush = True)
 
                 image.close()
 
