@@ -1,7 +1,7 @@
 #! /home/rusty/env/bin/python
 
 import tkinter as tk
-from tkinter import Canvas
+from tkinter import ttk
 from PIL import Image, ImageTk, ImageOps
 import PIL as pil
 from dirtree import DirTree
@@ -13,7 +13,7 @@ import logging
 import time
 import inspect
 
-class SlideShow(tk.Frame):
+class SlideShow(ttk.Frame):
     """Display a full screen slide show.
 
     Q key quits, up key adds 5 seconds to the delay,
@@ -34,8 +34,12 @@ class SlideShow(tk.Frame):
         self.timer_outer = None
         self.timer_gif = None
 
+        self.style = ttk.Style()
+        self.style.configure("TLabel", background = "black")
+        self.style.configure("TFrame", background = "black")
+
         self.pack()
-        self.configure(bg = 'black')
+        #self.configure(style = "blackbg")
 
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
@@ -61,7 +65,10 @@ class SlideShow(tk.Frame):
 
         self.add_menu(self.root)
 
-        self.canvas = Canvas(self, highlightthickness = 0)
+        # self.label = ttk.Label(self, highlightthickness = 0)
+        self.label = ttk.Label(self)
+
+        #self.label.configure(background = 'black')
 
         # self.files = self.get_files(self.directory)
         # random.shuffle(self.files)
@@ -321,11 +328,11 @@ class SlideShow(tk.Frame):
         resized_img.close()
         
         # delete previous image from canvas.create_image()
-        self.canvas.delete(self.img_id)
+        # self.label.delete(self.img_id)
 
-        self.canvas.configure(width = img_width, height = img_height, highlightthickness = 0)
-        self.img_id = self.canvas.create_image(0, 0, image = self.tk_img, anchor = 'nw')
-        self.canvas.pack(padx = x_pad, pady = y_pad)
+        #self.label.configure(width = img_width, height = img_height, highlightthickness = 0)
+        self.label.configure(image = self.tk_img)
+        self.label.pack(padx = x_pad, pady = y_pad)
 
         return
 
