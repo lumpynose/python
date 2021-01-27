@@ -237,9 +237,9 @@ class SlideShow(tk.Frame):
 
     def display_gif_frames(self, image):
         #print(inspect.currentframe().f_code.co_name)
-        if self.timer_outer != None:
-            self.root.after_cancel(self.timer_outer)
-            self.timer_outer = None
+        #if self.timer_outer != None:
+        #    self.root.after_cancel(self.timer_outer)
+        #    self.timer_outer = None
 
         try:
             image.seek(self.frame_num)
