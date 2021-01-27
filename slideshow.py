@@ -293,7 +293,7 @@ class SlideShow(ttk.Frame):
 
         resized_img.close()
 
-        self.label.configure(image = self.tk_img)
+        # self.label.configure(image = self.tk_img)
         self.label.pack(padx = x_pad, pady = y_pad)
 
         return
