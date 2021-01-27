@@ -39,7 +39,6 @@ class SlideShow(ttk.Frame):
         self.style.configure("TFrame", background = "black")
 
         self.pack()
-        #self.configure(style = "blackbg")
 
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
@@ -65,13 +64,8 @@ class SlideShow(ttk.Frame):
 
         self.add_menu(self.root)
 
-        # self.label = ttk.Label(self, highlightthickness = 0)
         self.label = ttk.Label(self)
 
-        #self.label.configure(background = 'black')
-
-        # self.files = self.get_files(self.directory)
-        # random.shuffle(self.files)
         self.files = []
 
         return
@@ -79,8 +73,6 @@ class SlideShow(ttk.Frame):
     ###########################################
 
     def get_files(self, directory):
-        #print(inspect.currentframe().f_code.co_name)
-
         files = DirTree().files(directory)
         
         if len(files) == 0:
@@ -166,9 +158,15 @@ class SlideShow(ttk.Frame):
 
     ###########################################
 
-    def resize_image(self, image):
-        #print(inspect.currentframe().f_code.co_name)
+    def is_gif(self, image_name):
+        if (image_name.endswith(".gif")):
+            return(True)
 
+        return(False)
+
+    ###########################################
+
+    def resize_image(self, image):
         (img_width, img_height) = image.size
 
         logging.info("orig {}/{}".format(img_width, img_height))
@@ -195,32 +193,11 @@ class SlideShow(ttk.Frame):
 
     ###########################################
 
-    def is_gif(self, image_name):
-        #print(inspect.currentframe().f_code.co_name)
-
-        if (image_name.endswith(".gif")):
-            return(True)
-
-        return(False)
-
-    ###########################################
-
-    def update(self):
-        #print(inspect.currentframe().f_code.co_name)
- 
-        self.display_file()
-
-        return
-
-    ###########################################
-
     # This used to do more, unrolling the frames and storing
     # them in an array which display_gif_frames() displayed.  Now
     # display_gif_frames() fetches the individual frames and displays
     # them.
     def display_gif(self, image):
-        #print(inspect.currentframe().f_code.co_name)
-
         try:
             self.delay = int(image.info['duration'] / 4)
         except:
@@ -243,8 +220,6 @@ class SlideShow(ttk.Frame):
     ###########################################
 
     def display_gif_frames(self, image):
-        #print(inspect.currentframe().f_code.co_name)
-
         try:
             image.seek(self.frame_num)
             frame = image.copy()
@@ -295,8 +270,6 @@ class SlideShow(ttk.Frame):
     ###########################################
 
     def display_image(self, image):
-        #print(inspect.currentframe().f_code.co_name)
-
         resized_img = self.resize_image(image)
         
         (img_width, img_height) = resized_img.size
@@ -319,11 +292,7 @@ class SlideShow(ttk.Frame):
             logging.warning("exception in ImageTk.PhotoImage: {}".format(sys.exc_info()[0]))
 
         resized_img.close()
-        
-        # delete previous image from canvas.create_image()
-        # self.label.delete(self.img_id)
 
-        #self.label.configure(width = img_width, height = img_height, highlightthickness = 0)
         self.label.configure(image = self.tk_img)
         self.label.pack(padx = x_pad, pady = y_pad)
 
@@ -332,8 +301,6 @@ class SlideShow(ttk.Frame):
     ###########################################
 
     def display_file(self):
-        #print(inspect.currentframe().f_code.co_name)
-
         # true first time through
         if self.counter >= len(self.files):
             # re-read in case files were added or removed
