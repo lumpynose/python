@@ -268,7 +268,7 @@ class SlideShow(tk.Frame):
 
             self.frame_num = 0;
 
-            self.timer_gif = self.root.after(self.delay, lambda: self.display_gif_frames(image))
+            self.timer_gif = self.root.after(self.delay, lambda: self.display_file())
 
             return
 
