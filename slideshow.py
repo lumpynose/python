@@ -176,13 +176,13 @@ class SlideShow(tk.Frame):
         logging.info("new size: {}/{}".format(wsize, hsize))
 
         try:
-            new_img = ImageOps.scale(image, ratio)
+            resized_image = ImageOps.scale(image, ratio)
         except:
             logging.warning("exception in ImageOps.scale: {}".format(sys.exc_info()[0]))
 
         image.close()
 
-        return(new_img)
+        return(resized_image)
 
     ###########################################
 
@@ -260,13 +260,14 @@ class SlideShow(tk.Frame):
 
                 image.close()
 
-                self.display_file()
+                self.timer_outer = self.root.after(1, lambda: self.display_file())
 
                 return
 
             self.repeat += 1;
 
             self.frame_num = 0;
+
             self.timer_gif = self.root.after(self.delay, lambda: self.display_gif_frames(image))
 
             return
@@ -285,9 +286,9 @@ class SlideShow(tk.Frame):
 
     def display_image(self, image):
         #print(inspect.currentframe().f_code.co_name)
-        new_img = self.resize_image(image)
+        resized_img = self.resize_image(image)
         
-        (img_width, img_height) = new_img.size
+        (img_width, img_height) = resized_img.size
 
         (x_pad, y_pad) = 0, 0
 
@@ -302,11 +303,11 @@ class SlideShow(tk.Frame):
         # need to store tk_img outside or it gets garbage collected?
 
         try:
-            self.tk_img = ImageTk.PhotoImage(new_img)
+            self.tk_img = ImageTk.PhotoImage(resized_img)
         except:
             logging.warning("exception in ImageTk.PhotoImage: {}".format(sys.exc_info()[0]))
 
-        new_img.close()
+        resized_img.close()
         
         # delete previous image from canvas.create_image()
         self.canvas.delete(self.img_id)
@@ -341,6 +342,8 @@ class SlideShow(tk.Frame):
         except:
             logging.warning("exception in Image.open: {}, {}".format(sys.exc_info()[0], file_name))
 
+            self.timer_outer = self.root.after(self.seconds * 1000, lambda: self.display_file())
+
             return
 
         if self.is_gif(file_name):
@@ -348,6 +351,8 @@ class SlideShow(tk.Frame):
 
             return
 
+        # else it's a jpeg, png, etc.
+        
         self.display_image(base_img)
 
         base_img.close()
@@ -394,7 +399,7 @@ verbose = args.verbose
 upscale = args.upscale
 
 if verbose:
-    print(args)
+    print(args, flush = True)
 
 root = tk.Tk()
 
