@@ -73,6 +73,7 @@ class SlideShow(tk.Frame):
 
     def get_files(self, directory):
         #print(inspect.currentframe().f_code.co_name)
+
         files = DirTree().files(directory)
         
         if len(files) == 0:
@@ -160,6 +161,7 @@ class SlideShow(tk.Frame):
 
     def resize_image(self, image):
         #print(inspect.currentframe().f_code.co_name)
+
         (img_width, img_height) = image.size
 
         logging.info("orig {}/{}".format(img_width, img_height))
@@ -188,6 +190,7 @@ class SlideShow(tk.Frame):
 
     def is_gif(self, image_name):
         #print(inspect.currentframe().f_code.co_name)
+
         if (image_name.endswith(".gif")):
             return(True)
 
@@ -210,6 +213,7 @@ class SlideShow(tk.Frame):
     # them.
     def display_gif(self, image):
         #print(inspect.currentframe().f_code.co_name)
+
         #if self.timer_outer != None:
         #    self.root.after_cancel(self.timer_outer)
         #    self.timer_outer = None
@@ -237,6 +241,7 @@ class SlideShow(tk.Frame):
 
     def display_gif_frames(self, image):
         #print(inspect.currentframe().f_code.co_name)
+
         #if self.timer_outer != None:
         #    self.root.after_cancel(self.timer_outer)
         #    self.timer_outer = None
@@ -265,6 +270,8 @@ class SlideShow(tk.Frame):
 
                 return
 
+            # end of gif, time left for a repeat
+
             self.repeat += 1;
 
             self.frame_num = 0;
@@ -272,6 +279,8 @@ class SlideShow(tk.Frame):
             self.timer_gif = self.root.after(self.delay, lambda: self.display_gif_frames(image))
 
             return
+
+        # more frames to display
 
         self.display_image(frame)
 
@@ -287,6 +296,7 @@ class SlideShow(tk.Frame):
 
     def display_image(self, image):
         #print(inspect.currentframe().f_code.co_name)
+
         resized_img = self.resize_image(image)
         
         (img_width, img_height) = resized_img.size
@@ -338,14 +348,16 @@ class SlideShow(tk.Frame):
         self.counter += 1
 
         try:
-            # base_img = ImageTk.Image.open(file_name)
             base_img = Image.open(file_name)
         except:
             logging.warning("exception in Image.open: {}, {}".format(sys.exc_info()[0], file_name))
 
+            # move on to next image
             self.timer_outer = self.root.after(self.seconds * 1000, lambda: self.display_file())
 
             return
+
+        # display_gif does its own repeating with after()
 
         if self.is_gif(file_name):
             self.display_gif(base_img)
