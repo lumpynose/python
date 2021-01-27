@@ -221,10 +221,6 @@ class SlideShow(ttk.Frame):
     def display_gif(self, image):
         #print(inspect.currentframe().f_code.co_name)
 
-        #if self.timer_outer != None:
-        #    self.root.after_cancel(self.timer_outer)
-        #    self.timer_outer = None
-
         try:
             self.delay = int(image.info['duration'] / 4)
         except:
@@ -249,10 +245,6 @@ class SlideShow(ttk.Frame):
     def display_gif_frames(self, image):
         #print(inspect.currentframe().f_code.co_name)
 
-        #if self.timer_outer != None:
-        #    self.root.after_cancel(self.timer_outer)
-        #    self.timer_outer = None
-
         try:
             image.seek(self.frame_num)
             frame = image.copy()
@@ -273,7 +265,7 @@ class SlideShow(ttk.Frame):
                 image.close()
 
                 # let stack unwind?
-                self.timer_outer = self.root.after(1, lambda: self.display_file())
+                self.timer_outer = self.root.after(self.delay, lambda: self.display_file())
 
                 return
 
