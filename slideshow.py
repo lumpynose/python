@@ -1,7 +1,6 @@
 #! /home/rusty/env/bin/python
 
 import tkinter as tk
-from tkinter import ttk
 from PIL import Image, ImageTk, ImageOps
 import PIL as pil
 from dirtree import DirTree
@@ -13,7 +12,7 @@ import logging
 import time
 import inspect
 
-class SlideShow(ttk.Frame):
+class SlideShow(tk.Frame):
     """Display a full screen slide show.
 
     Q key quits, up key adds 5 seconds to the delay,
@@ -34,11 +33,8 @@ class SlideShow(ttk.Frame):
         self.timer_outer = None
         self.timer_gif = None
 
-        self.style = ttk.Style()
-        self.style.configure("TLabel", background = "black")
-        self.style.configure("TFrame", background = "black")
-
         self.pack()
+        self.configure(bg = 'black')
 
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
@@ -64,7 +60,7 @@ class SlideShow(ttk.Frame):
 
         self.add_menu(self.root)
 
-        self.label = ttk.Label(self)
+        self.label = tk.Label(self, highlightthickness = 0, bg = 'black')
 
         self.files = []
 
@@ -78,7 +74,7 @@ class SlideShow(ttk.Frame):
         if len(files) == 0:
             sys.exit("nothing to display")
 
-        random.shuffle(self.files)
+        random.shuffle(files)
 
         return files
 
@@ -310,7 +306,7 @@ class SlideShow(ttk.Frame):
             # re-read in case files were added or removed
             self.files = self.get_files(self.directory)
             self.counter = 0
-
+            
         file_name = self.files[self.counter]
 
         logging.info("file: {}".format(file_name))
@@ -379,7 +375,8 @@ args = parser.parse_args()
 directory = args.directory
 sleep = args.sleep
 verbose = args.verbose
-upscale = args.upscale
+#upscale = args.upscale
+upscale = True
 
 if verbose:
     print(args, flush = True)
@@ -396,5 +393,3 @@ slideshow = SlideShow(directory = directory,
 slideshow.display_file()
 
 root.mainloop()
-
-print('tk quit', flush = True)
