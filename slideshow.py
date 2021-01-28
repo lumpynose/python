@@ -77,14 +77,18 @@ class SlideShow(ttk.Frame):
         
         if len(files) == 0:
             sys.exit("nothing to display")
-            
+
+        random.shuffle(self.files)
+
         return files
 
     ###########################################
 
     def quitss(self, event = None):
         logging.info("exiting")
-        self.root.destroy()
+        # self.root.destroy()
+
+        self.root.quit()
 
         return
 
@@ -293,7 +297,7 @@ class SlideShow(ttk.Frame):
 
         resized_img.close()
 
-        # self.label.configure(image = self.tk_img)
+        self.label.configure(image = self.tk_img)
         self.label.pack(padx = x_pad, pady = y_pad)
 
         return
@@ -305,7 +309,6 @@ class SlideShow(ttk.Frame):
         if self.counter >= len(self.files):
             # re-read in case files were added or removed
             self.files = self.get_files(self.directory)
-            random.shuffle(self.files)
             self.counter = 0
 
         file_name = self.files[self.counter]
@@ -393,3 +396,5 @@ slideshow = SlideShow(directory = directory,
 slideshow.display_file()
 
 root.mainloop()
+
+print('tk quit', flush = True)
