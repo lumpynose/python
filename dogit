@@ -1,8 +1,10 @@
 git add slideshow.py
-git add slideshow2.py
+git add slideshow-2.py
 git add dirtree.py
 git add dogit
 
 git commit
 
 git push
+
+git status
