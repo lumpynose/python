@@ -1,8 +1,8 @@
 #! /home/rusty/env/bin/python
 
-import tkinter as tk
+import tkinter
+import PIL
 from PIL import Image, ImageTk, ImageOps
-import PIL as pil
 from dirtree import DirTree
 from datetime import datetime
 import random
@@ -12,7 +12,7 @@ import logging
 import time
 import inspect
 
-class SlideShow(tk.Frame):
+class SlideShow(tkinter.Frame):
     """Display a full screen slide show.
 
     Q key quits, up key adds 5 seconds to the delay,
@@ -21,14 +21,16 @@ class SlideShow(tk.Frame):
     right key goes forward one.
     """
 
-    def __init__(self, directory, sleep, root, verbose, upscale):
+    def __init__(self, directory, sleep, root,
+                 verbose, noupscale, looping):
         super().__init__(root)
 
         self.directory = directory
         self.seconds = sleep
         self.root = root
         self.verbose = verbose
-        self.upscale = upscale
+        self.noupscale = noupscale
+        self.looping = looping
 
         self.timer_outer = None
         self.timer_gif = None
@@ -60,7 +62,9 @@ class SlideShow(tk.Frame):
 
         self.add_menu(self.root)
 
-        self.label = tk.Label(self, highlightthickness = 0, bg = 'black')
+        self.label = tkinter.Label(self,
+                                   highlightthickness = 0,
+                                   bg = 'black')
 
         self.files = []
 
@@ -70,7 +74,7 @@ class SlideShow(tk.Frame):
 
     def get_files(self, directory):
         files = DirTree().files(directory)
-        
+
         if len(files) == 0:
             sys.exit("nothing to display")
 
@@ -82,9 +86,11 @@ class SlideShow(tk.Frame):
 
     def quitss(self, event = None):
         logging.info("exiting")
-        # self.root.destroy()
 
-        self.root.quit()
+        if self.verbose:
+            print("exiting", flush = True)
+
+        self.root.destroy()
 
         return
 
@@ -92,6 +98,7 @@ class SlideShow(tk.Frame):
 
     def up_key(self, event = None):
         logging.info("up pressed")
+
         self.seconds += 5
 
         return
@@ -117,7 +124,7 @@ class SlideShow(tk.Frame):
 
         if self.counter < 0:
             self.counter = 0
- 
+
         if self.timer_outer != None:
             self.root.after_cancel(self.timer_outer)
             self.timer_outer = None
@@ -146,7 +153,7 @@ class SlideShow(tk.Frame):
     def add_menu(self, root):
         root.option_add('*tearOff', False)
 
-        menu = tk.Menu(root)
+        menu = tkinter.Menu(root)
 
         menu.add_command(label = 'Previous', command = self.left_key);
         menu.add_command(label = 'Next', command = self.right_key);
@@ -171,7 +178,7 @@ class SlideShow(tk.Frame):
 
         logging.info("orig {}/{}".format(img_width, img_height))
 
-        if not self.upscale and ((img_width <= self.basewidth) and (img_height <= self.baseheight)):
+        if self.noupscale and ((img_width <= self.basewidth) and (img_height <= self.baseheight)):
             ratio = 1
         else:
             ratio = min(self.basewidth / img_width, self.baseheight / img_height)
@@ -183,11 +190,11 @@ class SlideShow(tk.Frame):
         logging.info("new size: {}/{}".format(wsize, hsize))
 
         try:
-            resized_image = ImageOps.scale(image, ratio)
+            resized_image = PIL.ImageOps.scale(image, ratio)
         except:
             logging.warning("exception in ImageOps.scale: {}".format(sys.exc_info()[0]))
 
-        image.close()
+        # image.close()
 
         return(resized_image)
 
@@ -198,6 +205,11 @@ class SlideShow(tk.Frame):
     # display_gif_frames() fetches the individual frames and displays
     # them.
     def display_gif(self, image):
+        if self.verbose:
+            print("{}: {} starts".format(len(inspect.stack()),
+                                         inspect.currentframe().f_code.co_name),
+                  flush = True)
+
         try:
             self.delay = int(image.info['duration'] / 4)
         except:
@@ -215,11 +227,35 @@ class SlideShow(tk.Frame):
 
         self.display_gif_frames(image)
 
+        if self.verbose:
+            print("{}: display_gif returns".format(len(inspect.stack()),
+                                                   inspect.currentframe().f_code.co_name),
+                  flush = True)
+
+        return
+
+    ###########################################
+
+    def update(self):
+        print("calling after_idle", flush = True)
+
+        self.root.after_idle(lambda: self.after_idle_complete())
+
+        return
+
+    def after_idle_complete(self):
+        print("after idle complete", flush = True)
+
         return
 
     ###########################################
 
     def display_gif_frames(self, image):
+        if self.frame_num == 0 and self.verbose:
+            print("{}: {} starts".format(len(inspect.stack()),
+                                         inspect.currentframe().f_code.co_name),
+                  flush = True)
+
         try:
             image.seek(self.frame_num)
             frame = image.copy()
@@ -231,17 +267,22 @@ class SlideShow(tk.Frame):
                              .format(self.frame_num - 1, self.delay, self.repeat))
 
                 if self.verbose:
-                    print("dur: {}, reps: {}, frames: {}, {}"
+                    print("dur: {}, reps: {}, stack frames: {}, {}"
                           .format((self.frame_num - 1) * self.delay,
                                   self.repeat,
                                   len(inspect.stack()),
                                   datetime.today().ctime()),
                      flush = True)
 
-                image.close()
+                # image.close()
 
-                # let stack unwind?
-                self.timer_outer = self.root.after(self.delay, lambda: self.display_file())
+                print("{}: display_gif_frames returns 1".format(len(inspect.stack()),
+                                                                inspect.currentframe().f_code.co_name),
+                      flush = True)
+
+                # done for this gif, go to next file
+
+                self.display_file()
 
                 return
 
@@ -253,13 +294,18 @@ class SlideShow(tk.Frame):
 
             self.timer_gif = self.root.after(self.delay, lambda: self.display_gif_frames(image))
 
+            if self.verbose:
+                print("{}: display_gif_frames returns 2".format(len(inspect.stack()),
+                                                                inspect.currentframe().f_code.co_name),
+                      flush = True)
+
             return
 
         # more frames to display
 
         self.display_image(frame)
 
-        frame.close()
+        # frame.close()
 
         self.frame_num += 1
 
@@ -271,7 +317,7 @@ class SlideShow(tk.Frame):
 
     def display_image(self, image):
         resized_img = self.resize_image(image)
-        
+
         (img_width, img_height) = resized_img.size
 
         (x_pad, y_pad) = 0, 0
@@ -287,11 +333,13 @@ class SlideShow(tk.Frame):
         # need to store tk_img outside or it gets garbage collected?
 
         try:
-            self.tk_img = ImageTk.PhotoImage(resized_img)
+            self.tk_img = PIL.ImageTk.PhotoImage(resized_img)
         except:
             logging.warning("exception in ImageTk.PhotoImage: {}".format(sys.exc_info()[0]))
 
-        resized_img.close()
+            return
+
+        # resized_img.close()
 
         self.label.configure(image = self.tk_img)
         self.label.pack(padx = x_pad, pady = y_pad)
@@ -301,25 +349,39 @@ class SlideShow(tk.Frame):
     ###########################################
 
     def display_file(self):
-        # true first time through
+        if self.verbose:
+            print("{}: {} starts".format(len(inspect.stack()),
+                                         inspect.currentframe().f_code.co_name),
+                  flush = True)
+
+        # true first time through, self.files is empty
         if self.counter >= len(self.files):
             # re-read in case files were added or removed
             self.files = self.get_files(self.directory)
             self.counter = 0
-            
+
         file_name = self.files[self.counter]
 
         logging.info("file: {}".format(file_name))
 
+        if self.looping:
+            if self.counter > 0:
+                self.quitss()
+
         self.counter += 1
 
         try:
-            base_img = Image.open(file_name)
+            base_img = PIL.Image.open(file_name)
         except:
             logging.warning("exception in Image.open: {}, {}".format(sys.exc_info()[0], file_name))
 
             # move on to next image
             self.timer_outer = self.root.after(self.seconds * 1000, lambda: self.display_file())
+
+            if self.verbose:
+                print("{}: display_file returns 1".format(len(inspect.stack()),
+                                                          inspect.currentframe().f_code.co_name),
+                      flush = True)
 
             return
 
@@ -328,15 +390,25 @@ class SlideShow(tk.Frame):
         if self.is_gif(file_name):
             self.display_gif(base_img)
 
+            if self.verbose:
+                print("{}: display_file returns 2".format(len(inspect.stack()),
+                                                          inspect.currentframe().f_code.co_name),
+                      flush = True)
+
             return
 
         # else it's a jpeg, png, etc.
-        
+
         self.display_image(base_img)
 
-        base_img.close()
+        # base_img.close()
 
         self.timer_outer = self.root.after(self.seconds * 1000, lambda: self.display_file())
+
+        if self.verbose:
+            print("{}: display_file returns 3".format(len(inspect.stack()),
+                                                      inspect.currentframe().f_code.co_name),
+                  flush = True)
 
         return
 
@@ -353,7 +425,7 @@ parser.add_argument('--verbose',
                     const = True,
                     default = False)
 
-parser.add_argument('--upscale',
+parser.add_argument('--noupscale',
                     help = 'upscale images',
                     action = 'store_const',
                     const = True,
@@ -375,21 +447,32 @@ args = parser.parse_args()
 directory = args.directory
 sleep = args.sleep
 verbose = args.verbose
-#upscale = args.upscale
-upscale = True
+noupscale = args.noupscale
 
 if verbose:
     print(args, flush = True)
 
-root = tk.Tk()
+looping = True
 
-slideshow = SlideShow(directory = directory,
-                      sleep = sleep,
-                      root = root,
-                      verbose = verbose,
-                      upscale = upscale)
+def looper():
+    root = tkinter.Tk()
 
-# Displays the first frame and starts the timer.
-slideshow.display_file()
+    slideshow = SlideShow(directory = directory,
+                          sleep = sleep,
+                          root = root,
+                          verbose = verbose,
+                          noupscale = noupscale,
+                          looping = looping)
 
-root.mainloop()
+    # Displays the first frame and starts the timer.
+    slideshow.display_file()
+
+    root.mainloop()
+
+    return
+
+if looping:
+    while True:
+        looper()
+else:
+    looper()

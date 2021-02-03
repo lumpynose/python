@@ -7,4 +7,5 @@ git commit
 
 git push
 
+echo -e "\n"
 git status
