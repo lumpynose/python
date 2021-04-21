@@ -1,11 +1,9 @@
 git add slideshow.py
 git add slideshow-2.py
 git add dirtree.py
+git add weather
 git add dogit
 
 git commit
 
 git push
-
-echo -e "\n"
-git status
