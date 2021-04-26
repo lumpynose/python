@@ -29,6 +29,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         self.threadpool = QtCore.QThreadPool()
         self.prom_sensor = GetPromSensor()
+        self.sensor_locations = { "prologue" : "garage", "accurite" : "outside", "oregon" : "attic" }
 
         self.previous = None
         self.widgets = { }
@@ -52,29 +53,33 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.threadpool.start(worker)
 
-    def process_result(self, temperatures):
-        print("receiving:", temperatures)
+    def process_result(self, sensors):
+        print("receiving:", sensors)
 
-        for temperature in temperatures.keys():
-            if self.widgets.get(temperature):
-                print("updating:", temperature)
-                self.update_widget(temperature, temperatures.get(temperature))
+        for sensor in sensors.keys():
+            if self.widgets.get(sensor):
+                print("updating:", sensor)
+                self.update_widget(sensor, sensors.get(sensor))
             else:
-                print("adding:", temperature)
-                self.add_widget(temperature, temperatures.get(temperature))
+                print("adding:", sensor)
+                self.add_widget(sensor, sensors.get(sensor))
 
 
-    def update_widget(self, temperature, value):
-        label = self.widgets.get(temperature)
+    def update_widget(self, sensor, value):
+        label = self.widgets.get(sensor)
         label.setText("{:.1f}".format(float(value)))
 
-    def add_widget(self, temperature, value):
+    def add_widget(self, sensor, value):
         frame = QtWidgets.QFrame(self.widget)
         frame.setStyleSheet("border: 2px solid black; background-color:SkyBlue; border-radius:6px")
 
         self.layout.addWidget(frame)
 
-        label_title = QtWidgets.QLabel(temperature)
+        location = self.sensor_locations.get(sensor)
+        if location:
+            label_title = QtWidgets.QLabel("{} ({})".format(location, sensor))
+        else:
+            label_title = QtWidgets.QLabel(sensor)
 
         label_title.setTextFormat(QtCore.Qt.TextFormat.PlainText)
         label_title.setStyleSheet("border: 1px solid black; background-color:DarkKhaki; border-radius:2px")
@@ -95,7 +100,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.layout.addLayout(vbox)
 
-        self.widgets.update({ temperature : label_value })
+        self.widgets.update({ sensor : label_value })
 
     def closeEvent(self, event):
         print("close event")
