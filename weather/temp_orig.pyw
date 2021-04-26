@@ -34,15 +34,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.previous = None
         self.widgets = { }
 
-        self.frame_main = QtWidgets.QFrame(self)
+        self.widget = QtWidgets.QFrame(self)
 
-        self.layout_top = QtWidgets.QVBoxLayout(self.frame_main)
-        self.layout_top.setObjectName("layout_top")
+        self.layout = QtWidgets.QVBoxLayout(self.widget)
 
-        self.frame_main.setStyleSheet("background-color:DarkSeaGreen")
-        self.frame_main.setLayout(self.layout_top)
+        self.widget.setStyleSheet("background-color:DarkSeaGreen")
+        self.widget.setLayout(self.layout)
 
-        self.setCentralWidget(self.frame_main)
+        self.setCentralWidget(self.widget)
 
         self.show()
 
@@ -60,17 +59,22 @@ class MainWindow(QtWidgets.QMainWindow):
         for sensor in sensors.keys():
             if self.widgets.get(sensor):
                 print("updating:", sensor)
-                self.update_sensor(sensor, sensors.get(sensor))
+                self.update_widget(sensor, sensors.get(sensor))
             else:
                 print("adding:", sensor)
-                self.add_sensor(sensor, sensors.get(sensor))
+                self.add_widget(sensor, sensors.get(sensor))
 
 
-    def update_sensor(self, sensor, value):
+    def update_widget(self, sensor, value):
         label = self.widgets.get(sensor)
         label.setText("{:.1f}".format(float(value)))
 
-    def add_sensor(self, sensor, value):
+    def add_widget(self, sensor, value):
+        frame = QtWidgets.QFrame(self.widget)
+        frame.setStyleSheet("border: 2px solid black; background-color:SkyBlue; border-radius:6px")
+
+        self.layout.addWidget(frame)
+
         location = self.sensor_locations.get(sensor)
         if location:
             label_title = QtWidgets.QLabel("{} ({})".format(location, sensor))
@@ -89,18 +93,12 @@ class MainWindow(QtWidgets.QMainWindow):
         label_value.setAlignment(QtCore.Qt.Alignment.AlignCenter)
         label_value.setFont(QtGui.QFont("Cooper Blk BT", 32))
 
-        frame = QtWidgets.QFrame(self.frame_main)
-        frame.setStyleSheet("border: 2px solid black; background-color:SkyBlue; border-radius:6px")
-
-        self.layout_top.addWidget(frame)
-
-        layout_vbox = QtWidgets.QVBoxLayout(frame)
-        layout_vbox.setObjectName("layout_vbox")
+        vbox = QtWidgets.QVBoxLayout(frame)
     
-        layout_vbox.addWidget(label_title)
-        layout_vbox.addWidget(label_value)
+        vbox.addWidget(label_title)
+        vbox.addWidget(label_value)
 
-        #self.layout_top.addLayout(layout_vbox)
+        self.layout.addLayout(vbox)
 
         self.widgets.update({ sensor : label_value })
 
