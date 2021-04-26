@@ -1,8 +1,4 @@
-git add slideshow.py
-git add slideshow-2.py
-git add dirtree.py
-git add weather
-git add dogit
+git add *
 
 git commit
 
