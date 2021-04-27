@@ -19,10 +19,8 @@ class Worker(QtCore.QRunnable):
     @QtCore.pyqtSlot()
     def run(self):
         while True:
-            print("Thread start")
             self.signals.result.emit(self.prom_sensor.get_sensor_latest())
             time.sleep(30)
-            print("Thread complete")
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -34,14 +32,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.previous = None
         self.widgets = { }
 
-        self.widget = QtWidgets.QFrame(self)
+        self.frame_main = QtWidgets.QFrame(self)
 
-        self.layout = QtWidgets.QVBoxLayout(self.widget)
+        self.layout_top = QtWidgets.QVBoxLayout(self.frame_main)
+        self.layout_top.setObjectName("layout_top")
 
-        self.widget.setStyleSheet("background-color:DarkSeaGreen")
-        self.widget.setLayout(self.layout)
+        self.frame_main.setStyleSheet("background-color:DarkSeaGreen")
+        self.frame_main.setLayout(self.layout_top)
 
-        self.setCentralWidget(self.widget)
+        self.setCentralWidget(self.frame_main)
 
         self.show()
 
@@ -54,27 +53,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.threadpool.start(worker)
 
     def process_result(self, sensors):
-        print("receiving:", sensors)
-
         for sensor in sensors.keys():
             if self.widgets.get(sensor):
-                print("updating:", sensor)
-                self.update_widget(sensor, sensors.get(sensor))
+                self.update_sensor(sensor, sensors.get(sensor))
             else:
-                print("adding:", sensor)
-                self.add_widget(sensor, sensors.get(sensor))
+                self.add_sensor(sensor, sensors.get(sensor))
 
 
-    def update_widget(self, sensor, value):
+    def update_sensor(self, sensor, value):
         label = self.widgets.get(sensor)
         label.setText("{:.1f}".format(float(value)))
 
-    def add_widget(self, sensor, value):
-        frame = QtWidgets.QFrame(self.widget)
-        frame.setStyleSheet("border: 2px solid black; background-color:SkyBlue; border-radius:6px")
-
-        self.layout.addWidget(frame)
-
+    def add_sensor(self, sensor, value):
         location = self.sensor_locations.get(sensor)
         if location:
             label_title = QtWidgets.QLabel("{} ({})".format(location, sensor))
@@ -89,16 +79,20 @@ class MainWindow(QtWidgets.QMainWindow):
         label_value = QtWidgets.QLabel("{:.1f}".format(float(value)))
 
         label_value.setTextFormat(QtCore.Qt.TextFormat.PlainText)
-        label_value.setStyleSheet("border: 1px solid dimgrey; background-color:PaleTurquoise; border-radius:4px")
+        label_value.setStyleSheet("border: 1px solid black; background-color:PaleTurquoise; border-radius:4px")
         label_value.setAlignment(QtCore.Qt.Alignment.AlignCenter)
         label_value.setFont(QtGui.QFont("Cooper Blk BT", 32))
 
-        vbox = QtWidgets.QVBoxLayout(frame)
-    
-        vbox.addWidget(label_title)
-        vbox.addWidget(label_value)
+        frame_sensor = QtWidgets.QFrame(self.frame_main)
+        frame_sensor.setStyleSheet("border: 2px solid black; background-color:SkyBlue; border-radius:6px")
 
-        self.layout.addLayout(vbox)
+        self.layout_top.addWidget(frame_sensor)
+
+        layout_vbox = QtWidgets.QVBoxLayout(frame_sensor)
+        layout_vbox.setObjectName("layout_vbox")
+    
+        layout_vbox.addWidget(label_title)
+        layout_vbox.addWidget(label_value)
 
         self.widgets.update({ sensor : label_value })
 
