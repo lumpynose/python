@@ -105,7 +105,7 @@ class MainWindow(QtWidgets.QMainWindow):
         label_value.setFont(QtGui.QFont("Cooper Blk BT", 32))
         label_value.setObjectName("label_value")
 
-        layout_vbox = QtWidgets.QVBoxLayout()
+        layout_vbox = QtWidgets.QVBoxLayout(frame_sensor)
 
         layout_vbox.setObjectName("layout_vbox")
         layout_vbox.addWidget(label_title)
