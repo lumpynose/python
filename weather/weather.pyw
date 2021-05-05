@@ -1,11 +1,11 @@
-#import sys
-#import time
+import sys
 
 from PyQt6 import QtGui
 from PyQt6 import QtWidgets
 from PyQt6 import QtCore
 
-from PromSensor import GetPromSensor
+import PromSensor
+import PromWorker
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -13,11 +13,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.threadpool = QtCore.QThreadPool()
 
-        self.signals = WorkerSignals()
+        self.signals = PromWorker.WorkerSignals()
 
         self.signals.result.connect(self.process_result)
 
-        self.prom_sensor = GetPromSensor()
+        self.prom_sensor = PromSensor.GetPromSensor()
         self.sensor_locations = { "prologue" : "garage", "accurite" : "outside", "oregon" : "attic" }
         self.widgets = { }
 
@@ -59,7 +59,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.request_data()
 
     def request_data(self):
-        worker = Worker(prom_sensor = self.prom_sensor, signals = self.signals)
+        worker = PromWorker.Worker(prom_sensor = self.prom_sensor, signals = self.signals)
 
         self.threadpool.start(worker)
         QtCore.QTimer.singleShot(30 * 1000, self.request_data)
@@ -125,19 +125,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         event.accept()
         sys.exit()
-
-class Worker(QtCore.QRunnable):
-    def __init__(self, prom_sensor, signals):
-        super(Worker, self).__init__()
-        self.prom_sensor = prom_sensor
-        self.signals = signals
-
-    def run(self):
-        values = self.prom_sensor.get_sensor_latest()
-        self.signals.result.emit(values)
-
-class WorkerSignals(QtCore.QObject):
-    result = QtCore.pyqtSignal(dict)
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
