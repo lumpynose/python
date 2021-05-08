@@ -6,13 +6,14 @@ from PyQt6 import QtCore
 
 import PromSensor
 import PromWorker
+import DateAndTime
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
+        date = DateAndTime.DateToday()
         self.threadpool = QtCore.QThreadPool()
-
         self.signals = PromWorker.WorkerSignals()
 
         self.signals.result.connect(self.process_result)
@@ -21,18 +22,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sensor_locations = { "prologue" : "garage", "accurite" : "outside", "oregon" : "attic" }
         self.widgets = { }
 
-        layout_top_hbox = QtWidgets.QHBoxLayout()
-        layout_top_hbox.setObjectName("layout_top_hbox")
+        frame_main = QtWidgets.QFrame()
+        frame_main.setStyleSheet("background-color:gray")
+        frame_main.setParent(self)
+        frame_main.setObjectName("frame_main")
+
+        layout_frame_main_hbox = QtWidgets.QHBoxLayout()
+        layout_frame_main_hbox.setObjectName("layout_frame_main_hbox")
 
         self.layout_temps_vbox = QtWidgets.QVBoxLayout()
         self.layout_temps_vbox.setObjectName("layout_temps_vbox")
 
-        frame_main = QtWidgets.QFrame()
-
-        frame_main.setStyleSheet("background-color:gray")
-        frame_main.setParent(self)
-        frame_main.setObjectName("frame_main")
-        frame_main.setLayout(layout_top_hbox)
+        frame_main.setLayout(layout_frame_main_hbox)
 
         self.frame_temps  = QtWidgets.QFrame()
 
@@ -43,7 +44,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         frame_summary = QtWidgets.QFrame()
 
-        frame_summary.setStyleSheet("border: 2px solid black; border-radius:3px; background-color:Peru")
+        frame_summary.setStyleSheet("background-color:DarkKhaki")
         frame_summary.setParent(frame_main)
         frame_summary.setObjectName("frame_summary")
 
@@ -54,46 +55,80 @@ class MainWindow(QtWidgets.QMainWindow):
 
         frame_summary_date = QtWidgets.QFrame()
         frame_summary_date.setObjectName("frame_summary_date")
+        frame_summary_date.setStyleSheet("background-color:PaleTurquoise; border: 2px solid black; border-radius:6px")
         
         layout_summary_date_hbox = QtWidgets.QHBoxLayout()
         layout_summary_date_hbox.setObjectName("layout_summary_date_hbox")
 
+        frame_summary_date_dow = QtWidgets.QLabel()
+        frame_summary_date_dow.setText(date.dayOfWeek())
+        frame_summary_date_dow.setAlignment(QtCore.Qt.Alignment.AlignHCenter)
+        frame_summary_date_dow.setStyleSheet("border: 0px solid black;")
+
+        frame_summary_date_dom = QtWidgets.QLabel()
+        frame_summary_date_dom.setText(date.date())
+        frame_summary_date_dom.setAlignment(QtCore.Qt.Alignment.AlignHCenter)
+        frame_summary_date_dom.setStyleSheet("border: 0px solid black;")
+
+        layout_summary_date_hbox.addWidget(frame_summary_date_dow)
+        layout_summary_date_hbox.addWidget(frame_summary_date_dom)
+
         frame_summary_date.setLayout(layout_summary_date_hbox)
-
-        label_date_dow = QtWidgets.QLabel()
-        label_date_dow.setText("Mon")
-
-        label_date_dom = QtWidgets.QLabel()
-        label_date_dom.setText("6 May")
-
-        layout_summary_date_hbox.addWidget(label_date_dow)
-        layout_summary_date_hbox.addWidget(label_date_dom)
 
         frame_summary_hilo = QtWidgets.QFrame()
         frame_summary_hilo.setObjectName("frame_summary_hilo")
+        frame_summary_hilo.setStyleSheet("background-color:PaleTurquoise; border: 2px solid black; border-radius:6px")
 
         layout_summary_hilo_hbox = QtWidgets.QHBoxLayout()
         layout_summary_hilo_hbox.setObjectName("layout_summary_hilo_hbox")
 
+        label_summary_hilo_low = QtWidgets.QLabel("low")
+        label_summary_hilo_low.setAlignment(QtCore.Qt.Alignment.AlignCenter)
+        label_summary_hilo_low.setStyleSheet("border: 1px solid black; border-radius:2px")
+
+        label_summary_hilo_high = QtWidgets.QLabel("high")
+        label_summary_hilo_high.setAlignment(QtCore.Qt.Alignment.AlignCenter)
+        label_summary_hilo_high.setStyleSheet("border: 1px solid black; border-radius:2px")
+
+        layout_summary_hilo_hbox.addWidget(label_summary_hilo_low)
+        layout_summary_hilo_hbox.addWidget(label_summary_hilo_high)
+
         frame_summary_hilo.setLayout(layout_summary_hilo_hbox)
 
-        frame_summary_icon = QtWidgets.QFrame()
-        frame_summary_icon.setObjectName("frame_summary_icon")
+        label_summary_icon = QtWidgets.QLabel("icon")
+        label_summary_icon.setObjectName("label_summary_icon")
 
-        frame_summary_rain = QtWidgets.QFrame()
-        frame_summary_rain.setObjectName("frame_summary_rain")
+        label_summary_rain = QtWidgets.QLabel("rain")
+        label_summary_rain.setAlignment(QtCore.Qt.Alignment.AlignCenter)
 
         frame_summary_sun = QtWidgets.QFrame()
         frame_summary_sun.setObjectName("frame_summary_sun")
+        frame_summary_sun.setStyleSheet("background-color:PaleTurquoise; border: 2px solid black; border-radius:6px")
+
+        layout_summary_sun_hbox = QtWidgets.QHBoxLayout()
+        layout_summary_sun_hbox.setObjectName("layout_summary_sun_hbox")
+
+        label_summary_sun_sunrise = QtWidgets.QLabel("sunrise")
+        label_summary_sun_sunrise.setAlignment(QtCore.Qt.Alignment.AlignCenter)
+        label_summary_sun_sunrise.setStyleSheet("border: 1px solid black; border-radius:2px")
+
+        label_summary_sun_sunset = QtWidgets.QLabel("sunset")
+        label_summary_sun_sunset.setAlignment(QtCore.Qt.Alignment.AlignCenter)
+        label_summary_sun_sunset.setStyleSheet("border: 1px solid black; border-radius:2px")
+
+        layout_summary_sun_hbox.addWidget(label_summary_sun_sunrise)
+        layout_summary_sun_hbox.addWidget(label_summary_sun_sunset)
+
+        frame_summary_sun.setLayout(layout_summary_sun_hbox)
 
         layout_summary_vbox.addWidget(frame_summary_date)
         layout_summary_vbox.addWidget(frame_summary_hilo)
-        layout_summary_vbox.addWidget(frame_summary_icon)
-        layout_summary_vbox.addWidget(frame_summary_rain)
+        layout_summary_vbox.addWidget(label_summary_icon)
+        layout_summary_vbox.addWidget(label_summary_rain)
         layout_summary_vbox.addWidget(frame_summary_sun)
 
-        layout_top_hbox.addWidget(self.frame_temps)
-        layout_top_hbox.addWidget(frame_summary)
+        layout_frame_main_hbox.addWidget(self.frame_temps)
+        layout_frame_main_hbox.addWidget(frame_summary)
 
         self.layout_temps_vbox.setParent(self.frame_temps)
 
