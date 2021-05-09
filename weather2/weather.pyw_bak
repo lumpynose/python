@@ -42,22 +42,26 @@ class MainWindow(QtWidgets.QMainWindow):
         frame_summary.setLayout(vbox_summary)
 
         frame_summary_date = QtWidgets.QFrame()
-        frame_summary_date.setStyleSheet("background-color:DarkKhaki; border: 1px solid; border-radius:6px")
-
+        frame_summary_date.setStyleSheet("background-color:Khaki; border: 2px solid; border-radius:6px")
+        
         hbox_summary_date = QtWidgets.QHBoxLayout()
         frame_summary_date.setLayout(hbox_summary_date)
 
-        hbox_summary_date.setContentsMargins(0, 0, 0, 0);
+        frame_summary_date_dow = QtWidgets.QLabel()
+        frame_summary_date_dow.setText(date.dayOfWeek())
+        frame_summary_date_dow.setAlignment(QtCore.Qt.Alignment.AlignHCenter)
+        frame_summary_date_dow.setStyleSheet("border: 1px solid;")
 
-        label_summary_date_dow = QtWidgets.QLabel()
-        label_summary_date_dow.setText(date.dayOfWeek() + ", " + date.date())
-        label_summary_date_dow.setAlignment(QtCore.Qt.Alignment.AlignCenter)
-        label_summary_date_dow.setStyleSheet("border: 0px solid;")
+        frame_summary_date_dom = QtWidgets.QLabel()
+        frame_summary_date_dom.setText(date.date())
+        frame_summary_date_dom.setAlignment(QtCore.Qt.Alignment.AlignHCenter)
+        frame_summary_date_dom.setStyleSheet("border: 1px solid;")
 
-        hbox_summary_date.addWidget(label_summary_date_dow)
+        hbox_summary_date.addWidget(frame_summary_date_dow)
+        hbox_summary_date.addWidget(frame_summary_date_dom)
 
         frame_summary_hilo = QtWidgets.QFrame()
-        frame_summary_hilo.setStyleSheet("background-color:DarkKhaki; border: 1px solid; border-radius:6px")
+        frame_summary_hilo.setStyleSheet("background-color:Khaki; border: 2px solid; border-radius:6px")
 
         hbox_summary_hilo = QtWidgets.QHBoxLayout()
         frame_summary_hilo.setLayout(hbox_summary_hilo)
@@ -79,7 +83,7 @@ class MainWindow(QtWidgets.QMainWindow):
         label_summary_rain.setAlignment(QtCore.Qt.Alignment.AlignCenter)
 
         frame_summary_sun = QtWidgets.QFrame()
-        frame_summary_sun.setStyleSheet("background-color:DarkKhaki; border: 2px solid; border-radius:6px")
+        frame_summary_sun.setStyleSheet("background-color:Khaki; border: 2px solid; border-radius:6px")
 
         hbox_summary_sun = QtWidgets.QHBoxLayout()
         frame_summary_sun.setLayout(hbox_summary_sun)
