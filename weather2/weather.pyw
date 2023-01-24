@@ -41,20 +41,20 @@ class MainWindow(QtWidgets.QMainWindow):
         vbox_summary = QtWidgets.QVBoxLayout()
         frame_summary.setLayout(vbox_summary)
 
-        frame_summary_date = QtWidgets.QFrame()
-        frame_summary_date.setStyleSheet("background-color:DarkKhaki; border: 1px solid; border-radius:6px")
+        #frame_summary_date = QtWidgets.QFrame()
+        #frame_summary_date.setStyleSheet("background-color:DarkKhaki; border: 1px solid; border-radius:6px")
 
-        hbox_summary_date = QtWidgets.QHBoxLayout()
-        frame_summary_date.setLayout(hbox_summary_date)
+        #hbox_summary_date = QtWidgets.QHBoxLayout()
+        #frame_summary_date.setLayout(hbox_summary_date)
 
-        hbox_summary_date.setContentsMargins(0, 0, 0, 0);
+        #hbox_summary_date.setContentsMargins(0, 0, 0, 0);
 
         label_summary_date_dow = QtWidgets.QLabel()
         label_summary_date_dow.setText(date.dayOfWeek() + ", " + date.date())
         label_summary_date_dow.setAlignment(QtCore.Qt.Alignment.AlignCenter)
-        label_summary_date_dow.setStyleSheet("border: 0px solid;")
+        label_summary_date_dow.setStyleSheet("background-color:PaleTurquoise; border: 1px solid; border-radius:4px;")
 
-        hbox_summary_date.addWidget(label_summary_date_dow)
+        #hbox_summary_date.addWidget(label_summary_date_dow)
 
         frame_summary_hilo = QtWidgets.QFrame()
         frame_summary_hilo.setStyleSheet("background-color:DarkKhaki; border: 1px solid; border-radius:6px")
@@ -95,7 +95,8 @@ class MainWindow(QtWidgets.QMainWindow):
         hbox_summary_sun.addWidget(label_summary_sun_sunrise)
         hbox_summary_sun.addWidget(label_summary_sun_sunset)
 
-        vbox_summary.addWidget(frame_summary_date)
+        #vbox_summary.addWidget(frame_summary_date)
+        vbox_summary.addWidget(label_summary_date_dow)
         vbox_summary.addWidget(frame_summary_hilo)
         vbox_summary.addWidget(label_summary_icon)
         vbox_summary.addWidget(label_summary_rain)

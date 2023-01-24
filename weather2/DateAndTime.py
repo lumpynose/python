@@ -11,7 +11,7 @@ class DateToday():
         return self.today.strftime("%d") + " " + self.today.strftime("%b")
 
     def dayOfWeek(self):
-        return self.today.strftime("%a")
+        return self.today.strftime("%A")
 
 if __name__ == '__main__':
     dateToday = DateToday()
